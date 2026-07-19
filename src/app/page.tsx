@@ -1,0 +1,1026 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Logo } from "@/components/logo";
+import { QuoteDialog } from "@/components/quote-dialog";
+
+import { 
+  Camera, 
+  Video, 
+  Palette, 
+  Megaphone, 
+  Globe, 
+  Mic, 
+  ArrowUpRight, 
+  Menu, 
+  Mail, 
+  ChevronRight,
+  ChevronDown,
+  Check,
+  Send,
+  Phone,
+  MapPin,
+  Sparkles,
+  Zap
+} from "lucide-react";
+
+interface ServiceItem {
+  id: string;
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  description: string;
+  details: string[];
+  imageUrl: string;
+}
+
+const SERVICES_DATA: ServiceItem[] = [
+  {
+    id: "photography",
+    title: "Photography",
+    icon: Camera,
+    description: "High-end commercial, fashion, editorial, and product capture.",
+    details: [
+      "Commercial & Studio Product Shoots",
+      "High-Fashion & Portrait Editorial",
+      "Architectural & Interior Photography",
+      "Corporate Headshots & Team Captures"
+    ],
+    imageUrl: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=800",
+  },
+  {
+    id: "videography",
+    title: "Videography",
+    icon: Video,
+    description: "Cinematic commercials, corporate profiles, music videos, and social films.",
+    details: [
+      "4K Cinematic Brand Commercials",
+      "High-Fidelity Music Videos",
+      "Corporate Documentary & Profiles",
+      "Social Media Reels & Micro-Content"
+    ],
+    imageUrl: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=800",
+  },
+  {
+    id: "branding",
+    title: "Branding",
+    icon: Palette,
+    description: "Corporate identity, visual guidelines, packaging, and collateral design.",
+    details: [
+      "Logo & Brand Identity Frameworks",
+      "Corporate Typography & Styling Kits",
+      "Product Packaging & Label Designs",
+      "Marketing Collateral & Guidelines"
+    ],
+    imageUrl: "https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=800",
+  },
+  {
+    id: "digital-marketing",
+    title: "Digital Marketing",
+    icon: Megaphone,
+    description: "Social growth strategy, performance ad planning, and search engine campaigns.",
+    details: [
+      "Audience Targeting & Growth Funnels",
+      "Meta, Google, & TikTok Performance Ads",
+      "Search Engine Optimization (SEO)",
+      "Content Matrix & Copywriting Strategies"
+    ],
+    imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800",
+  },
+  {
+    id: "website-development",
+    title: "Website Development",
+    icon: Globe,
+    description: "Stunning responsive websites, enterprise platforms, and digital products.",
+    details: [
+      "Custom Next.js & React Applications",
+      "Interactive Immersive Portfolios",
+      "E-Commerce Engine Integrations",
+      "Ultra-Fast Hosting & CMS Setup"
+    ],
+    imageUrl: "https://images.unsplash.com/photo-1547658719-da2b81169d42?q=80&w=800",
+  },
+  {
+    id: "podcast",
+    title: "Podcast",
+    icon: Mic,
+    description: "Professional audio capturing, editing, brand storytelling, and streaming setup.",
+    details: [
+      "Cinematic Multi-Mic Recording Sessions",
+      "Professional Sound Design & Post-Production",
+      "Distribution & Feed Configuration",
+      "Video-Podcast Multi-Cam Shoots"
+    ],
+    imageUrl: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800",
+  },
+];
+
+interface Project {
+  id: string;
+  title: string;
+  category: string;
+  client: string;
+  imageUrl: string;
+  link: string;
+}
+
+const PROJECTS_DATA: Project[] = [
+  {
+    id: "proj-1",
+    title: "Red Horizon Cinematic Commercial",
+    category: "Videography",
+    client: "Horizon Motors",
+    imageUrl: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800",
+    link: "#",
+  },
+  {
+    id: "proj-2",
+    title: "Velvet Elegance Visual Identity",
+    category: "Branding",
+    client: "Velvet Couture",
+    imageUrl: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=800",
+    link: "#",
+  },
+  {
+    id: "proj-3",
+    title: "Sonic Dialogues Narrative Podcast",
+    category: "Podcast",
+    client: "The Thinkers Club",
+    imageUrl: "https://images.unsplash.com/photo-1610116306796-6ebd30d77fa0?q=80&w=800",
+    link: "#",
+  },
+  {
+    id: "proj-4",
+    title: "Vanguard Urban Architecture Capture",
+    category: "Photography",
+    client: "Apex Realty",
+    imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800",
+    link: "#",
+  },
+  {
+    id: "proj-5",
+    title: "Hyperion Global Logistics Platform",
+    category: "Website Development",
+    client: "Hyperion Inc.",
+    imageUrl: "https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=800",
+    link: "#",
+  },
+  {
+    id: "proj-6",
+    title: "Omni-Channel Scale Strategy",
+    category: "Digital Marketing",
+    client: "Apex Health",
+    imageUrl: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=800",
+    link: "#",
+  },
+];
+
+const CLIENTS_DATA = [
+  { name: "Tesla Sri Lanka", logoText: "TESLA" },
+  { name: "MAS Holdings", logoText: "MAS" },
+  { name: "John Keells Group", logoText: "JKH" },
+  { name: "Dialog Axiata", logoText: "DIALOG" },
+  { name: "Dilmah Tea", logoText: "DILMAH" },
+  { name: "Cinnamon Hotels", logoText: "CINNAMON" },
+];
+
+export default function Home() {
+  const [scrolled, setScrolled] = useState(false);
+  const [isQuoteOpen, setIsQuoteOpen] = useState(false);
+  const [selectedQuoteService, setSelectedQuoteService] = useState("Photography");
+  const [activeWorkTab, setActiveWorkTab] = useState("All");
+  
+  // Scroll reveal visible state
+  const [visibleSections, setVisibleSections] = useState<Record<string, boolean>>({});
+
+  // Contact Form State
+  const [contactForm, setContactForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [isContactSubmitting, setIsContactSubmitting] = useState(false);
+  const [contactSuccess, setContactSuccess] = useState(false);
+
+  // Newsletter State
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
+
+  // Handle transparent to sticky background on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Intersection Observer for scroll reveal animations
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.1, // Trigger early when 10% is visible
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setVisibleSections((prev) => ({ ...prev, [entry.target.id]: true }));
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    const sections = ["about", "services", "work", "clients", "contact"];
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const openQuoteModal = (serviceName: string) => {
+    setSelectedQuoteService(serviceName);
+    setIsQuoteOpen(true);
+  };
+
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsContactSubmitting(true);
+    setTimeout(() => {
+      setIsContactSubmitting(false);
+      setContactSuccess(true);
+      setContactForm({ name: "", email: "", subject: "", message: "" });
+      setTimeout(() => setContactSuccess(false), 3000);
+    }, 1500);
+  };
+
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newsletterEmail.trim()) {
+      setNewsletterSuccess(true);
+      setTimeout(() => {
+        setNewsletterSuccess(false);
+        setNewsletterEmail("");
+      }, 3000);
+    }
+  };
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const headerOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
+
+  const filteredProjects = PROJECTS_DATA.filter((project) => {
+    if (activeWorkTab === "All") return true;
+    if (activeWorkTab === "Website Development") return project.category === "Website Development";
+    return project.category.toLowerCase().includes(activeWorkTab.toLowerCase());
+  });
+
+  return (
+    <div className="min-h-screen bg-black text-zinc-100 font-sans selection:bg-[#e50914] selection:text-white antialiased overflow-x-hidden relative">
+      
+      {/* Immersive ambient glows */}
+      <div className="absolute top-[10%] left-[-10%] w-[50%] h-[50%] bg-[#e50914]/5 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute top-[40%] right-[-10%] w-[45%] h-[45%] bg-[#e50914]/4 rounded-full blur-[180px] pointer-events-none" />
+      <div className="absolute bottom-[15%] left-[20%] w-[35%] h-[35%] bg-[#e50914]/3 rounded-full blur-[120px] pointer-events-none" />
+
+      {/* Main sticky navigation header */}
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${
+        scrolled 
+          ? "bg-black/85 backdrop-blur-md border-zinc-900 py-4 shadow-xl" 
+          : "bg-transparent border-transparent py-6"
+      }`}>
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          {/* Brand Logo */}
+          <a href="#" className="flex items-center" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+            <Logo size="md" />
+          </a>
+
+          {/* Desktop Nav Links with premium center sliding underlines */}
+          <nav className="hidden lg:flex items-center gap-8 font-medium text-sm text-zinc-400">
+            <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="relative py-1 hover:text-white transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-center after:scale-x-0 after:bg-[#e50914] after:transition-transform after:duration-300 hover:after:scale-x-100">HOME</a>
+            <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection("about"); }} className="relative py-1 hover:text-white transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-center after:scale-x-0 after:bg-[#e50914] after:transition-transform after:duration-300 hover:after:scale-x-100">ABOUT</a>
+            
+            {/* Services Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger render={
+                <button className="relative py-1 flex items-center gap-1 hover:text-white transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-center after:scale-x-0 after:bg-[#e50914] after:transition-transform after:duration-300 hover:after:scale-x-100 cursor-pointer outline-none uppercase font-medium text-sm">
+                  SERVICES <ChevronDown className="w-4 h-4" />
+                </button>
+              } />
+              <DropdownMenuContent className="w-60 bg-[#0d0d10] border-[#222] text-zinc-200 rounded-xl p-2 shadow-2xl" align="start">
+                <div className="text-zinc-500 text-xs font-semibold uppercase tracking-wider px-3 py-2">Our Capabilities</div>
+                <DropdownMenuSeparator className="bg-zinc-800/60" />
+                {SERVICES_DATA.map((service) => {
+                  const IconComp = service.icon;
+                  return (
+                    <DropdownMenuItem 
+                      key={service.id}
+                      onClick={() => {
+                        scrollToSection("services");
+                        setTimeout(() => {
+                          const target = document.getElementById(`service-card-${service.id}`);
+                          if (target) {
+                            target.scrollIntoView({ behavior: "smooth", block: "center" });
+                            target.classList.add("ring-2", "ring-[#e50914]");
+                            setTimeout(() => target.classList.remove("ring-2", "ring-[#e50914]"), 2000);
+                          }
+                        }, 500);
+                      }}
+                      className="focus:bg-[#e50914]/10 focus:text-white rounded-lg cursor-pointer px-3 py-2.5 flex items-center gap-3 transition-colors duration-250"
+                    >
+                      <IconComp className="w-4 h-4 text-[#e50914]" />
+                      <span className="text-sm font-semibold">{service.title}</span>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <a href="#work" onClick={(e) => { e.preventDefault(); scrollToSection("work"); }} className="relative py-1 hover:text-white transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-center after:scale-x-0 after:bg-[#e50914] after:transition-transform after:duration-300 hover:after:scale-x-100">WORK</a>
+            <a href="#clients" onClick={(e) => { e.preventDefault(); scrollToSection("clients"); }} className="relative py-1 hover:text-white transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-center after:scale-x-0 after:bg-[#e50914] after:transition-transform after:duration-300 hover:after:scale-x-100">CLIENTS</a>
+            <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection("contact"); }} className="relative py-1 hover:text-white transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-center after:scale-x-0 after:bg-[#e50914] after:transition-transform after:duration-300 hover:after:scale-x-100">CONTACT</a>
+          </nav>
+
+          {/* Action Button & Responsive trigger */}
+          <div className="flex items-center gap-4">
+            <Button 
+              onClick={() => openQuoteModal("Photography")}
+              className="hidden sm:flex bg-[#e50914] hover:bg-[#b8070f] hover:scale-105 active:scale-95 text-white font-bold px-5 py-2.5 rounded-lg shadow-lg shadow-[#e50914]/10 transition-all duration-300 cursor-pointer uppercase text-xs tracking-wider"
+            >
+              GET A QUOTE
+            </Button>
+
+            {/* Mobile Sheet Navigation */}
+            <Sheet>
+              <SheetTrigger render={
+                <Button variant="ghost" size="icon" className="lg:hidden text-zinc-300 hover:text-white hover:bg-zinc-900 rounded-lg">
+                  <Menu className="w-6 h-6" />
+                </Button>
+              } />
+              <SheetContent side="right" className="bg-black border-l border-zinc-900 text-zinc-100 p-6 flex flex-col justify-between">
+                <div>
+                  <div className="border-b border-zinc-900 pb-6">
+                    <Logo size="md" />
+                  </div>
+                  <nav className="flex flex-col gap-6 mt-10 text-lg font-bold">
+                    <a href="#" className="hover:text-[#e50914] transition-colors uppercase tracking-wide">HOME</a>
+                    <a href="#about" className="hover:text-[#e50914] transition-colors uppercase tracking-wide">ABOUT</a>
+                    <div className="space-y-3">
+                      <span className="text-xs text-zinc-600 font-bold uppercase tracking-widest block">SERVICES</span>
+                      <div className="grid grid-cols-2 gap-3 pl-2">
+                        {SERVICES_DATA.map((service) => (
+                          <a 
+                            key={service.id} 
+                            href="#services" 
+                            className="text-sm font-semibold text-zinc-400 hover:text-[#e50914] transition-colors"
+                          >
+                            {service.title}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                    <a href="#work" className="hover:text-[#e50914] transition-colors uppercase tracking-wide">WORK</a>
+                    <a href="#clients" className="hover:text-[#e50914] transition-colors uppercase tracking-wide">CLIENTS</a>
+                    <a href="#contact" className="hover:text-[#e50914] transition-colors uppercase tracking-wide">CONTACT</a>
+                  </nav>
+                </div>
+
+                <div className="border-t border-zinc-900 pt-6">
+                  <Button 
+                    className="w-full bg-[#e50914] hover:bg-[#b8070f] text-white py-6 text-sm font-bold uppercase tracking-wider rounded-xl shadow-lg"
+                    onClick={() => openQuoteModal("Photography")}
+                  >
+                    GET A QUOTE
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="relative z-10">
+        
+        {/* HERO SECTION - Entry Animated */}
+        <section className="min-h-screen flex flex-col justify-center max-w-7xl mx-auto px-6 pt-24 pb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            {/* Visual description */}
+            <div className="lg:col-span-8 space-y-8">
+              <div className="inline-flex items-center gap-2 bg-[#e50914]/10 border border-[#e50914]/30 px-3.5 py-1.5 rounded-full text-[#e50914] text-xs font-bold tracking-wider uppercase animate-fade-in opacity-0 [animation-fill-mode:forwards] [animation-delay:100ms]">
+                <Zap className="w-3.5 h-3.5" /> Premium Trans-Media Production Agency
+              </div>
+              <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-white leading-none animate-fade-in-up opacity-0 [animation-fill-mode:forwards] [animation-delay:250ms]">
+                CREATING STORIES <br />
+                THAT <span className="text-[#e50914] relative inline-block">DEMAND</span> ATTENTION.
+              </h1>
+              <p className="text-zinc-400 text-lg sm:text-xl font-light leading-relaxed max-w-2xl animate-fade-in-up opacity-0 [animation-fill-mode:forwards] [animation-delay:450ms]">
+                We are a full-service creative agency blending professional cinema-grade production, visual brand identities, and high-performance engineering to scale global platforms.
+              </p>
+              <div className="flex flex-wrap gap-4 pt-2 animate-fade-in-up opacity-0 [animation-fill-mode:forwards] [animation-delay:650ms]">
+                <Button 
+                  onClick={() => openQuoteModal("Photography")}
+                  className="bg-[#e50914] hover:bg-[#b8070f] hover:scale-105 active:scale-95 text-white font-bold h-12 px-8 rounded-lg shadow-lg shadow-[#e50914]/10 flex items-center gap-2 cursor-pointer transition-all duration-300"
+                >
+                  Start Project <ArrowUpRight className="w-4 h-4" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => scrollToSection("work")}
+                  className="border-zinc-800 hover:border-zinc-500 hover:bg-zinc-900/40 hover:scale-105 active:scale-95 text-zinc-300 hover:text-white h-12 px-8 rounded-lg transition-all cursor-pointer"
+                >
+                  Explore Work
+                </Button>
+              </div>
+            </div>
+
+            {/* Visual element representing a modern studio setup */}
+            <div className="lg:col-span-4 relative hidden lg:block select-none animate-zoom-in opacity-0 [animation-fill-mode:forwards] [animation-delay:450ms]">
+              <div className="aspect-[4/5] rounded-3xl overflow-hidden border border-zinc-900 bg-zinc-950 p-3 shadow-2xl relative group">
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10" />
+                <img 
+                  src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=800" 
+                  alt="Cinema Production Rig" 
+                  className="w-full h-full object-cover rounded-2xl grayscale group-hover:grayscale-0 transition-all duration-700 ease-out" 
+                />
+                
+                {/* Micro Floating Info Card */}
+                <div className="absolute bottom-6 left-6 right-6 z-20 bg-[#0d0d10]/95 backdrop-blur border border-zinc-900 p-4 rounded-xl shadow-lg flex justify-between items-center">
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Active Capture</p>
+                    <p className="text-sm font-extrabold text-white">4K RED Cinema Spec</p>
+                  </div>
+                  <div className="bg-[#e50914]/15 text-[#e50914] px-2.5 py-1 rounded text-xs font-bold uppercase">
+                    RED
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* ABOUT SECTION - Scroll Revealed */}
+        <section 
+          id="about" 
+          className={`py-24 border-t border-zinc-950 bg-black/60 relative transition-all duration-1000 transform ${
+            visibleSections.about ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+              
+              {/* Header Details */}
+              <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-32">
+                <span className="text-[#e50914] text-xs font-bold uppercase tracking-widest block">WHO WE ARE</span>
+                <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+                  WE SHAPE THE AESTHETICS OF MODERN BUSINESS.
+                </h2>
+                <div className="w-16 h-1 bg-[#e50914]" />
+                <p className="text-zinc-400 leading-relaxed font-light">
+                  Newspaper Media is an agile creative house delivering high-end assets. We bridge the gap between creative visual artistry (cinematic video, photography, sound design) and advanced digital solutions (websites, applications, performance marketing).
+                </p>
+              </div>
+
+              {/* Grid cards detailing features & stats */}
+              <div className="lg:col-span-7 space-y-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  
+                  <Card className="bg-[#0b0b0d] border-zinc-900 hover:border-zinc-800 p-6 rounded-2xl space-y-4 hover:-translate-y-1.5 transition-all duration-300 group">
+                    <div className="bg-[#e50914]/10 border border-[#e50914]/20 p-3.5 rounded-xl w-fit text-[#e50914] group-hover:bg-[#e50914] group-hover:text-white transition-all duration-300">
+                      <Video className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-extrabold text-lg text-white">Full-Scale Production</h3>
+                    <p className="text-xs text-zinc-400 leading-relaxed font-light">
+                      From concept storyboards, director scopes, multi-mic spatial recording to cinema grade finishing and rendering.
+                    </p>
+                  </Card>
+
+                  <Card className="bg-[#0b0b0d] border-zinc-900 hover:border-zinc-800 p-6 rounded-2xl space-y-4 hover:-translate-y-1.5 transition-all duration-300 group">
+                    <div className="bg-[#e50914]/10 border border-[#e50914]/20 p-3.5 rounded-xl w-fit text-[#e50914] group-hover:bg-[#e50914] group-hover:text-white transition-all duration-300">
+                      <Sparkles className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-extrabold text-lg text-white">Brand Intelligence</h3>
+                    <p className="text-xs text-zinc-400 leading-relaxed font-light">
+                      We craft bespoke corporate branding frameworks that instantly communicate value and align with business objectives.
+                    </p>
+                  </Card>
+
+                  <Card className="bg-[#0b0b0d] border-zinc-900 hover:border-zinc-800 p-6 rounded-2xl space-y-4 hover:-translate-y-1.5 transition-all duration-300 group">
+                    <div className="bg-[#e50914]/10 border border-[#e50914]/20 p-3.5 rounded-xl w-fit text-[#e50914] group-hover:bg-[#e50914] group-hover:text-white transition-all duration-300">
+                      <Globe className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-extrabold text-lg text-white">Digital Engineering</h3>
+                    <p className="text-xs text-zinc-400 leading-relaxed font-light">
+                      Designing custom high-performance React and Next.js applications that load instantly and provide gorgeous UX.
+                    </p>
+                  </Card>
+
+                  <Card className="bg-[#0b0b0d] border-zinc-900 hover:border-zinc-800 p-6 rounded-2xl space-y-4 hover:-translate-y-1.5 transition-all duration-300 group">
+                    <div className="bg-[#e50914]/10 border border-[#e50914]/20 p-3.5 rounded-xl w-fit text-[#e50914] group-hover:bg-[#e50914] group-hover:text-white transition-all duration-300">
+                      <Megaphone className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-extrabold text-lg text-white">Performance Growth</h3>
+                    <p className="text-xs text-zinc-400 leading-relaxed font-light">
+                      Deploying data-driven digital ad funnels and analytics to capture, optimize, and convert targeted customer attention.
+                    </p>
+                  </Card>
+
+                </div>
+
+                {/* Counter stats banner */}
+                <div className="bg-zinc-950 border border-zinc-900 rounded-3xl p-8 grid grid-cols-3 gap-6 text-center">
+                  <div className="space-y-1">
+                    <p className="text-2xl sm:text-4xl font-black text-white">500+</p>
+                    <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-wider">PROJECTS DELIVERED</p>
+                  </div>
+                  <div className="space-y-1 border-x border-zinc-900">
+                    <p className="text-2xl sm:text-4xl font-black text-[#e50914]">10+</p>
+                    <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-wider">YEARS IN STUDIO</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-2xl sm:text-4xl font-black text-white">98%</p>
+                    <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-wider">CLIENT SATISFACTION</p>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* SERVICES SECTION - Scroll Revealed */}
+        <section 
+          id="services" 
+          className={`py-24 bg-black relative transition-all duration-1000 transform ${
+            visibleSections.services ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
+          <div className="max-w-7xl mx-auto px-6">
+            
+            {/* Header description */}
+            <div className="text-center max-w-2xl mx-auto space-y-4 mb-20">
+              <span className="text-[#e50914] text-xs font-bold uppercase tracking-widest block">SERVICES</span>
+              <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
+                OUR CORE CAPABILITIES
+              </h2>
+              <p className="text-zinc-500 text-sm font-light">
+                Tailored creative execution designed to give your brand a striking unfair advantage.
+              </p>
+            </div>
+
+            {/* Grid display of 6 services */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {SERVICES_DATA.map((service) => {
+                const IconComp = service.icon;
+                return (
+                  <Card 
+                    key={service.id} 
+                    id={`service-card-${service.id}`}
+                    className="bg-[#0c0c0e] border-zinc-900 hover:border-zinc-800 hover:-translate-y-2 hover:shadow-xl hover:shadow-[#e50914]/5 rounded-2xl overflow-hidden transition-all duration-500 flex flex-col group"
+                  >
+                    {/* Tiny visual card header */}
+                    <div className="h-44 w-full relative overflow-hidden select-none bg-zinc-950">
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-[#0c0c0e]/30 to-transparent z-10" />
+                      <img 
+                        src={service.imageUrl} 
+                        alt={service.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+                      />
+                      <div className="absolute top-4 left-4 bg-black/75 backdrop-blur-sm border border-zinc-900 p-2.5 rounded-xl text-[#e50914] z-20 group-hover:bg-[#e50914] group-hover:text-white transition-colors duration-300">
+                        <IconComp className="w-5 h-5" />
+                      </div>
+                    </div>
+
+                    <CardHeader className="px-6 pt-5 pb-2">
+                      <CardTitle className="text-xl font-bold text-white group-hover:text-[#e50914] transition-colors duration-200">
+                        {service.title}
+                      </CardTitle>
+                      <CardDescription className="text-zinc-400 text-xs mt-1 font-light leading-relaxed">
+                        {service.description}
+                      </CardDescription>
+                    </CardHeader>
+
+                    {/* Specifications List */}
+                    <CardContent className="px-6 py-4 flex-1">
+                      <ul className="space-y-2.5 text-xs text-zinc-400 font-light">
+                        {service.details.map((detail, idx) => (
+                          <li key={idx} className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#e50914]" />
+                            {detail}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+
+                    {/* Card CTA */}
+                    <CardFooter className="px-6 py-4 border-t border-zinc-900 bg-black/30">
+                      <Button 
+                        onClick={() => openQuoteModal(service.title)}
+                        className="w-full bg-transparent border border-zinc-800 hover:border-[#e50914] hover:bg-[#e50914] hover:scale-[1.02] text-zinc-300 hover:text-white rounded-lg py-2.5 text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer transition-all duration-350"
+                      >
+                        Book Service <ChevronRight className="w-3.5 h-3.5" />
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
+            </div>
+
+          </div>
+        </section>
+
+        {/* WORK / PORTFOLIO SECTION - Scroll Revealed */}
+        <section 
+          id="work" 
+          className={`py-24 border-t border-zinc-950 bg-black/60 relative transition-all duration-1000 transform ${
+            visibleSections.work ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
+          <div className="max-w-7xl mx-auto px-6">
+            
+            {/* Header details */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-6 border-b border-zinc-900 mb-12">
+              <div className="space-y-4">
+                <span className="text-[#e50914] text-xs font-bold uppercase tracking-widest block">PORTFOLIO</span>
+                <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
+                  FEATURED WORK
+                </h2>
+              </div>
+
+              {/* Filtering tabs */}
+              <div className="flex flex-wrap gap-2">
+                {["All", "Photography", "Videography", "Branding", "Website Development", "Podcast"].map((tab) => (
+                  <Button
+                    key={tab}
+                    onClick={() => setActiveWorkTab(tab)}
+                    className={`h-9 px-4 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-350 cursor-pointer ${
+                      activeWorkTab === tab
+                        ? "bg-[#e50914] text-white shadow-lg shadow-[#e50914]/20 scale-105"
+                        : "bg-transparent border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-650 hover:scale-105"
+                    }`}
+                  >
+                    {tab === "Website Development" ? "Web Dev" : tab}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Grid listing */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredProjects.map((project) => (
+                <div 
+                  key={project.id} 
+                  className="group relative rounded-2xl overflow-hidden border border-zinc-900 bg-[#0d0d0f] aspect-[4/3] cursor-pointer shadow-lg select-none hover:shadow-xl hover:shadow-[#e50914]/5 transition-all duration-500"
+                >
+                  {/* Photo content */}
+                  <img 
+                    src={project.imageUrl} 
+                    alt={project.title} 
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
+                  />
+                  
+                  {/* Dark overlay showing metadata on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 sm:opacity-0 sm:group-hover:opacity-95 transition-opacity duration-300 p-6 flex flex-col justify-end z-20">
+                    <div className="space-y-1.5 translate-y-0 sm:translate-y-4 sm:group-hover:translate-y-0 transition-transform duration-300">
+                      <span className="text-[#e50914] text-[10px] font-bold uppercase tracking-widest block">{project.category}</span>
+                      <h4 className="text-lg font-extrabold text-white leading-snug">{project.title}</h4>
+                      <p className="text-zinc-500 text-xs font-medium">Client: {project.client}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </section>
+
+        {/* CLIENTS SECTION - Scroll Revealed */}
+        <section 
+          id="clients" 
+          className={`py-24 bg-black relative transition-all duration-1000 transform ${
+            visibleSections.clients ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
+          <div className="max-w-7xl mx-auto px-6">
+            
+            {/* Title */}
+            <div className="text-center max-w-xl mx-auto space-y-3 mb-16">
+              <span className="text-[#e50914] text-xs font-bold uppercase tracking-widest block">TRUSTED BY</span>
+              <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+                OUR ESTEEMED CLIENTS
+              </h2>
+            </div>
+
+            {/* Clients Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 items-center">
+              {CLIENTS_DATA.map((client, index) => (
+                <div 
+                  key={index}
+                  className="bg-[#0b0b0d] border border-zinc-900 rounded-2xl h-28 flex flex-col items-center justify-center p-4 hover:border-zinc-800 hover:-translate-y-1 hover:bg-[#e50914]/5 transition-all duration-300 group cursor-default"
+                >
+                  <span className="text-zinc-650 group-hover:text-white font-sans font-black tracking-widest text-lg transition-colors select-none">
+                    {client.logoText}
+                  </span>
+                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-1">
+                    {client.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </section>
+
+        {/* CONTACT SECTION WITH FORM - Scroll Revealed */}
+        <section 
+          id="contact" 
+          className={`py-24 border-t border-zinc-950 bg-black/60 relative transition-all duration-1000 transform ${
+            visibleSections.contact ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+              
+              {/* Information Area */}
+              <div className="lg:col-span-5 space-y-10">
+                <div className="space-y-4">
+                  <span className="text-[#e50914] text-xs font-bold uppercase tracking-widest block">GET IN TOUCH</span>
+                  <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+                    {"LET'S CREATE SOMETHING UNFORGETTABLE."}
+                  </h2>
+                  <p className="text-zinc-400 text-sm font-light leading-relaxed">
+                    Have an upcoming shoot, visual overhaul, or digital development proposal? Write to us, visit our office, or request an instant quote today.
+                  </p>
+                </div>
+
+                <div className="space-y-6 text-sm text-zinc-300">
+                  
+                  <div className="flex gap-4 items-start">
+                    <div className="bg-[#e50914]/15 border border-[#e50914]/25 p-3 rounded-xl text-[#e50914] shrink-0">
+                      <MapPin className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider mb-1">Our Location</p>
+                      <p className="font-medium text-white">122B, Lake Road,</p>
+                      <p className="font-light">Boralesgamuwa, Sri Lanka</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 items-start">
+                    <div className="bg-[#e50914]/15 border border-[#e50914]/25 p-3 rounded-xl text-[#e50914] shrink-0">
+                      <Mail className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider mb-1">Email Correspondence</p>
+                      <a href="mailto:office@wowmedia.lk" className="font-medium text-white hover:text-[#e50914] transition-colors">
+                        office@wowmedia.lk
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 items-start">
+                    <div className="bg-[#e50914]/15 border border-[#e50914]/25 p-3 rounded-xl text-[#e50914] shrink-0">
+                      <Phone className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider mb-1">Telephone Line</p>
+                      <a href="tel:+94112517690" className="font-medium text-white hover:text-[#e50914] transition-colors">
+                        0112 517 690
+                      </a>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Social media connections */}
+                <div className="space-y-3">
+                  <p className="text-xs text-zinc-600 font-bold uppercase tracking-widest">Connect with our socials</p>
+                  <div className="flex gap-3">
+                    <a href="#" className="bg-zinc-950 hover:bg-[#e50914] border border-zinc-900 p-2.5 rounded-lg text-zinc-400 hover:text-white hover:scale-105 active:scale-95 transition-all duration-305" aria-label="Instagram">
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+                      </svg>
+                    </a>
+                    <a href="#" className="bg-zinc-950 hover:bg-[#e50914] border border-zinc-900 p-2.5 rounded-lg text-zinc-400 hover:text-white hover:scale-105 active:scale-95 transition-all duration-305" aria-label="Facebook">
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M9 8H7v3h2v9h3v-9h3l.5-3H12V6c0-.88.39-1 1-1h2V2h-3c-2.9 0-5 1.55-5 4.5V8z"/>
+                      </svg>
+                    </a>
+                    <a href="#" className="bg-zinc-950 hover:bg-[#e50914] border border-zinc-900 p-2.5 rounded-lg text-zinc-400 hover:text-white hover:scale-105 active:scale-95 transition-all duration-305" aria-label="Twitter">
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M23.953 4.57a10 10 0 0 1-2.825.775 4.958 4.958 0 0 0 2.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 0 0-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 0 0-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 0 1-2.228-.616v.06a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.212.085 4.936 4.936 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 0 0 7.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0 0 24 4.59z"/>
+                      </svg>
+                    </a>
+                    <a href="#" className="bg-zinc-950 hover:bg-[#e50914] border border-zinc-900 p-2.5 rounded-lg text-zinc-400 hover:text-white hover:scale-105 active:scale-95 transition-all duration-305" aria-label="Youtube">
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11C4.483 20.455 12 20.455 12 20.455s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Form Area */}
+              <div className="lg:col-span-7">
+                <Card className="bg-[#0b0b0d] border-zinc-900 p-8 rounded-3xl shadow-2xl relative">
+                  
+                  <h3 className="text-xl font-bold text-white mb-6 uppercase tracking-wider flex items-center gap-2">
+                    <Send className="w-4 h-4 text-[#e50914]" /> Write a Message
+                  </h3>
+
+                  {contactSuccess ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center space-y-4 animate-in fade-in duration-300">
+                      <div className="bg-[#e50914]/15 border border-[#e50914]/30 p-4 rounded-full text-[#e50914] animate-bounce">
+                        <Check className="w-6 h-6 stroke-[3]" />
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-lg text-white">Message Sent Successfully!</h4>
+                        <p className="text-xs text-zinc-500 mt-1 max-w-xs mx-auto">
+                          Thank you for reaching out. A studio representative will reply to your email shortly.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleContactSubmit} className="space-y-4">
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <Label htmlFor="contact-name" className="text-zinc-300 text-xs font-semibold uppercase tracking-wider">Your Name</Label>
+                          <Input
+                            id="contact-name"
+                            type="text"
+                            placeholder="John Doe"
+                            value={contactForm.name}
+                            onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
+                            required
+                            className="bg-zinc-950 border-zinc-900 focus:border-[#e50914] focus:ring-1 focus:ring-[#e50914]/30 text-white rounded-xl h-11 placeholder:text-zinc-700"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="contact-email" className="text-zinc-300 text-xs font-semibold uppercase tracking-wider">Email Address</Label>
+                          <Input
+                            id="contact-email"
+                            type="email"
+                            placeholder="name@company.com"
+                            value={contactForm.email}
+                            onChange={(e) => setContactForm(prev => ({ ...prev, email: e.target.value }))}
+                            required
+                            className="bg-zinc-950 border-zinc-900 focus:border-[#e50914] focus:ring-1 focus:ring-[#e50914]/30 text-white rounded-xl h-11 placeholder:text-zinc-700"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="contact-subject" className="text-zinc-300 text-xs font-semibold uppercase tracking-wider">Subject</Label>
+                        <Input
+                          id="contact-subject"
+                          type="text"
+                          placeholder="e.g. Website development and shoot proposal"
+                          value={contactForm.subject}
+                          onChange={(e) => setContactForm(prev => ({ ...prev, subject: e.target.value }))}
+                          required
+                          className="bg-zinc-950 border-zinc-900 focus:border-[#e50914] focus:ring-1 focus:ring-[#e50914]/30 text-white rounded-xl h-11 placeholder:text-zinc-700"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="contact-message" className="text-zinc-300 text-xs font-semibold uppercase tracking-wider">Message Description</Label>
+                        <textarea
+                          id="contact-message"
+                          rows={4}
+                          placeholder="Tell us details about the timeline, media type, and deliverables..."
+                          value={contactForm.message}
+                          onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
+                          required
+                          className="w-full bg-zinc-950 border border-zinc-900 focus:border-[#e50914] focus:ring-1 focus:ring-[#e50914]/30 text-white rounded-xl p-4 text-sm outline-none resize-none placeholder:text-zinc-700"
+                        />
+                      </div>
+
+                      <Button
+                        type="submit"
+                        disabled={isContactSubmitting}
+                        className="w-full bg-[#e50914] hover:bg-[#b8070f] text-white font-bold h-11 rounded-xl shadow-lg shadow-[#e50914]/15 flex items-center justify-center gap-2 cursor-pointer transition-colors duration-300"
+                      >
+                        {isContactSubmitting ? (
+                          <>
+                            <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                            Transmitting...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4" /> Send Message
+                          </>
+                        )}
+                      </Button>
+
+                    </form>
+                  )}
+
+                </Card>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      {/* FOOTER SECTION */}
+      <footer className="border-t border-zinc-900 bg-zinc-980 relative z-10 text-zinc-400 text-xs">
+        <div className="max-w-7xl mx-auto px-6 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
+            
+            {/* Column 1 - Brand & Identity */}
+            <div className="md:col-span-5 space-y-6">
+              <a href="#" className="flex" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+                <Logo size="md" />
+              </a>
+              <p className="text-zinc-550 leading-relaxed font-light text-[11px] max-w-sm">
+                Newspaper Media is a comprehensive media production and custom design company crafting cinematic video campaigns, commercial photography, brand visual blueprints, and high-performance digital products.
+              </p>
+              <p className="text-[10px] text-zinc-600 font-bold">
+                © {new Date().getFullYear()} Newspaper Media. All rights reserved.
+              </p>
+            </div>
+
+            {/* Column 2 - Links */}
+            <div className="md:col-span-3 space-y-4">
+              <h4 className="text-white font-bold uppercase tracking-wider text-xs">Service Focus</h4>
+              <ul className="space-y-2.5 text-[11.5px] font-light text-zinc-500">
+                <li><a href="#services" onClick={(e) => { e.preventDefault(); scrollToSection("services"); }} className="hover:text-[#e50914] transition-colors">Commercial Videography</a></li>
+                <li><a href="#services" onClick={(e) => { e.preventDefault(); scrollToSection("services"); }} className="hover:text-[#e50914] transition-colors">High-Fashion Photography</a></li>
+                <li><a href="#services" onClick={(e) => { e.preventDefault(); scrollToSection("services"); }} className="hover:text-[#e50914] transition-colors">Corporate Visual Branding</a></li>
+                <li><a href="#services" onClick={(e) => { e.preventDefault(); scrollToSection("services"); }} className="hover:text-[#e50914] transition-colors">Performance Marketing</a></li>
+                <li><a href="#services" onClick={(e) => { e.preventDefault(); scrollToSection("services"); }} className="hover:text-[#e50914] transition-colors">React & Next.js Development</a></li>
+                <li><a href="#services" onClick={(e) => { e.preventDefault(); scrollToSection("services"); }} className="hover:text-[#e50914] transition-colors">Creative Podcasting</a></li>
+              </ul>
+            </div>
+
+            {/* Column 3 - Newsletter Broadcast */}
+            <div className="md:col-span-4 space-y-4">
+              <h4 className="text-white font-bold uppercase tracking-wider text-xs">Newsletter Broadcast</h4>
+              <p className="text-zinc-500 font-light text-[11px] leading-relaxed">
+                Stay updated with the latest in cinematic styles, software design milestones, and creative guides.
+              </p>
+              
+              {newsletterSuccess ? (
+                <div className="bg-[#e50914]/10 border border-[#e50914]/30 rounded-xl p-3 text-center text-[#e50914] font-semibold text-xs animate-pulse">
+                  Subscribed to Broadcast list!
+                </div>
+              ) : (
+                <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+                  <Input 
+                    type="email"
+                    placeholder="Enter email address"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    required
+                    className="bg-[#0b0b0d] border-zinc-900 focus:border-[#e50914] focus:ring-1 focus:ring-[#e50914]/30 rounded-lg text-xs placeholder:text-zinc-700 flex-1"
+                  />
+                  <Button 
+                    type="submit"
+                    className="bg-[#e50914] hover:bg-[#b8070f] text-white px-4 rounded-lg font-bold uppercase text-[10px] tracking-wider cursor-pointer"
+                  >
+                    Join
+                  </Button>
+                </form>
+              )}
+            </div>
+
+          </div>
+        </div>
+      </footer>
+
+      {/* Global Interactive Quote Dialog Modal */}
+      <QuoteDialog 
+        key={selectedQuoteService}
+        open={isQuoteOpen} 
+        onOpenChange={setIsQuoteOpen} 
+        defaultService={selectedQuoteService} 
+      />
+
+    </div>
+  );
+}
