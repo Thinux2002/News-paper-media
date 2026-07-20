@@ -170,3 +170,23 @@
 .animate-zoom-in {
   animation: zoomIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Railway Marquee Infinite Logo Ticker Effect */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 20s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}

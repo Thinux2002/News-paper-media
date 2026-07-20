@@ -189,12 +189,66 @@ const PROJECTS_DATA: Project[] = [
 ];
 
 const CLIENTS_DATA = [
-  { name: "Tesla Sri Lanka", logoText: "TESLA" },
-  { name: "MAS Holdings", logoText: "MAS" },
-  { name: "John Keells Group", logoText: "JKH" },
-  { name: "Dialog Axiata", logoText: "DIALOG" },
-  { name: "Dilmah Tea", logoText: "DILMAH" },
-  { name: "Cinnamon Hotels", logoText: "CINNAMON" },
+  {
+    id: "tesla",
+    logoText: "TESLA",
+    svg: (
+      <svg className="h-6 w-auto fill-current text-zinc-300 group-hover:text-white transition-colors duration-300" viewBox="0 0 342 35">
+        <path d="M156.4 0h-29.2v4.8h12.1v29.8h4.9V4.8h12.2V0zM68.7 0H27.5v4.8h15.6v29.8h4.9V4.8h20.7V0zM250.7 0h-4.9v29.8h19.5v-4.8h-14.6V0zM342.3 34.6l-14.6-34.6h-5.2l-14.6 34.6h5.3l3.6-8.7h16.6l3.6 8.7h5.3zm-23.7-13.4l6.1-14.7 6.1 14.7h-12.2zM218.4 0h-34.4v34.6h4.9V20.2h24.6v-4.8h-24.6V4.8h29.5V0z"/>
+      </svg>
+    )
+  },
+  {
+    id: "mas",
+    logoText: "MAS",
+    svg: (
+      <div className="flex items-center gap-2 font-black tracking-tighter text-2xl">
+        <span className="bg-[#e50914] text-white px-2.5 py-0.5 rounded font-extrabold text-base">MAS</span>
+        <span className="text-zinc-300 group-hover:text-white font-bold text-xs tracking-widest transition-colors duration-300">HOLDINGS</span>
+      </div>
+    )
+  },
+  {
+    id: "jkh",
+    logoText: "JKH",
+    svg: (
+      <div className="flex items-center gap-1 font-serif font-black tracking-widest text-lg text-zinc-300 group-hover:text-white transition-colors duration-300">
+        <span>JOHN KEELLS</span>
+      </div>
+    )
+  },
+  {
+    id: "dialog",
+    logoText: "DIALOG",
+    svg: (
+      <div className="flex items-center gap-2 font-extrabold tracking-wider text-lg text-zinc-300 group-hover:text-white transition-colors duration-300">
+        <svg className="w-5 h-5 text-[#e50914] fill-current" viewBox="0 0 24 24">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+        </svg>
+        <span>DIALOG</span>
+      </div>
+    )
+  },
+  {
+    id: "dilmah",
+    logoText: "DILMAH",
+    svg: (
+      <div className="flex items-center gap-2 font-serif font-bold text-lg text-zinc-300 group-hover:text-white tracking-widest transition-colors duration-300">
+        <span className="text-[#e50914] text-xl">🍃</span>
+        <span>Dilmah</span>
+      </div>
+    )
+  },
+  {
+    id: "cinnamon",
+    logoText: "CINNAMON",
+    svg: (
+      <div className="flex items-center gap-2 font-serif font-semibold text-base text-zinc-300 group-hover:text-white tracking-widest transition-colors duration-300">
+        <span className="text-[#e50914] font-bold text-lg">⚜</span>
+        <span>CINNAMON</span>
+      </div>
+    )
+  },
 ];
 
 export default function Home() {
@@ -929,21 +983,18 @@ export default function Home() {
               </h2>
             </div>
 
-            {/* Clients Grid */}
-            <div className="gsap-clients-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 items-center">
-              {CLIENTS_DATA.map((client, index) => (
-                <div 
-                  key={index}
-                  className="gsap-client-logo bg-[#0b0b0d] border border-zinc-900 rounded-2xl h-28 flex flex-col items-center justify-center p-4 hover:border-zinc-800 hover:-translate-y-1 hover:bg-[#e50914]/5 transition-all duration-300 group cursor-default"
-                >
-                  <span className="text-zinc-650 group-hover:text-white font-sans font-black tracking-widest text-lg transition-colors select-none">
-                    {client.logoText}
-                  </span>
-                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-1">
-                    {client.name}
-                  </span>
-                </div>
-              ))}
+            {/* Railway Infinite Running Logo Marquee Track */}
+            <div className="relative w-full overflow-hidden py-4 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+              <div className="animate-marquee flex items-center gap-6">
+                {[...CLIENTS_DATA, ...CLIENTS_DATA, ...CLIENTS_DATA].map((client, index) => (
+                  <div 
+                    key={index}
+                    className="gsap-client-logo bg-[#0b0b0d] border border-zinc-900 hover:border-[#e50914]/40 rounded-2xl h-24 w-56 flex-shrink-0 flex items-center justify-center p-6 hover:scale-105 hover:bg-[#e50914]/10 hover:shadow-xl hover:shadow-[#e50914]/10 transition-all duration-300 cursor-pointer"
+                  >
+                    {client.svg}
+                  </div>
+                ))}
+              </div>
             </div>
 
           </div>
