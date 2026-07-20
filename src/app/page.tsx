@@ -103,7 +103,7 @@ const SERVICES_DATA: ServiceItem[] = [
       "E-Commerce Engine Integrations",
       "Ultra-Fast Hosting & CMS Setup"
     ],
-    imageUrl: "https://images.unsplash.com/photo-1547658719-da2b81169d42?q=80&w=800",
+    imageUrl: "/website_dev.png",
   },
   {
     id: "podcast",
@@ -116,7 +116,7 @@ const SERVICES_DATA: ServiceItem[] = [
       "Distribution & Feed Configuration",
       "Video-Podcast Multi-Cam Shoots"
     ],
-    imageUrl: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=800",
+    imageUrl: "/podcast_studio.png",
   },
 ];
 
@@ -135,7 +135,7 @@ const PROJECTS_DATA: Project[] = [
     title: "Red Horizon Cinematic Commercial",
     category: "Videography",
     client: "Horizon Motors",
-    imageUrl: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800",
+    imageUrl: "/work_videography.png",
     link: "#",
   },
   {
@@ -143,7 +143,7 @@ const PROJECTS_DATA: Project[] = [
     title: "Velvet Elegance Visual Identity",
     category: "Branding",
     client: "Velvet Couture",
-    imageUrl: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=800",
+    imageUrl: "/work_branding.png",
     link: "#",
   },
   {
@@ -151,7 +151,7 @@ const PROJECTS_DATA: Project[] = [
     title: "Sonic Dialogues Narrative Podcast",
     category: "Podcast",
     client: "The Thinkers Club",
-    imageUrl: "https://images.unsplash.com/photo-1610116306796-6ebd30d77fa0?q=80&w=800",
+    imageUrl: "/work_podcast.png",
     link: "#",
   },
   {
@@ -159,7 +159,7 @@ const PROJECTS_DATA: Project[] = [
     title: "Vanguard Urban Architecture Capture",
     category: "Photography",
     client: "Apex Realty",
-    imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800",
+    imageUrl: "/work_photography.png",
     link: "#",
   },
   {
@@ -167,7 +167,7 @@ const PROJECTS_DATA: Project[] = [
     title: "Hyperion Global Logistics Platform",
     category: "Website Development",
     client: "Hyperion Inc.",
-    imageUrl: "https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=800",
+    imageUrl: "/work_webdev.png",
     link: "#",
   },
   {
@@ -175,7 +175,7 @@ const PROJECTS_DATA: Project[] = [
     title: "Omni-Channel Scale Strategy",
     category: "Digital Marketing",
     client: "Apex Health",
-    imageUrl: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=800",
+    imageUrl: "/work_marketing.png",
     link: "#",
   },
 ];
