@@ -1,6 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -29,6 +33,10 @@ import {
   Sparkles,
   Zap
 } from "lucide-react";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface ServiceItem {
   id: string;
@@ -194,9 +202,11 @@ export default function Home() {
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [selectedQuoteService, setSelectedQuoteService] = useState("Photography");
   const [activeWorkTab, setActiveWorkTab] = useState("All");
-  
-  // Scroll reveal visible state
-  const [visibleSections, setVisibleSections] = useState<Record<string, boolean>>({});
+
+  // GSAP Counter numbers state
+  const [statProj, setStatProj] = useState(0);
+  const [statYears, setStatYears] = useState(0);
+  const [statSat, setStatSat] = useState(0);
 
   // Contact Form State
   const [contactForm, setContactForm] = useState({ name: "", email: "", subject: "", message: "" });
@@ -207,7 +217,7 @@ export default function Home() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
 
-  // Handle transparent to sticky background on scroll
+  // Scroll handler for sticky header styling
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 50) {
@@ -220,30 +230,234 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Intersection Observer for scroll reveal animations
-  useEffect(() => {
-    const observerOptions = {
-      root: null,
-      rootMargin: "0px",
-      threshold: 0.1, // Trigger early when 10% is visible
-    };
-
-    const observerCallback = (entries: IntersectionObserverEntry[]) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setVisibleSections((prev) => ({ ...prev, [entry.target.id]: true }));
-        }
-      });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-    const sections = ["about", "services", "work", "clients", "contact"];
-    sections.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
+  // Comprehensive Master-Class GSAP & ScrollTrigger Pipeline
+  useGSAP(() => {
+    // 0. Top Progress Bar Animation
+    gsap.to(".gsap-progress-bar", {
+      scaleX: 1,
+      ease: "none",
+      scrollTrigger: {
+        trigger: "body",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 0.1,
+      }
     });
 
-    return () => observer.disconnect();
+    // Ambient Glows Parallax Motion
+    gsap.to(".gsap-glow-1", {
+      y: 200,
+      ease: "none",
+      scrollTrigger: {
+        trigger: "body",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1,
+      }
+    });
+    gsap.to(".gsap-glow-2", {
+      y: -200,
+      ease: "none",
+      scrollTrigger: {
+        trigger: "body",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1,
+      }
+    });
+
+    // 1. Hero Entrance Sequence
+    const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    heroTl
+      .fromTo(".gsap-hero-badge", { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 })
+      .fromTo(".gsap-hero-title", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 1 }, "-=0.5")
+      .fromTo(".gsap-hero-desc", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, "-=0.6")
+      .fromTo(".gsap-hero-btns", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, "-=0.6")
+      .fromTo(".gsap-hero-visual", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 1.1 }, "-=0.8");
+
+    // Continuous floating motion for hero visual
+    gsap.to(".gsap-hero-visual", {
+      y: -12,
+      duration: 3,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut"
+    });
+
+    // 2. About Section Animations
+    gsap.fromTo(".gsap-about-header", 
+      { x: -60, opacity: 0 },
+      {
+        x: 0,
+        opacity: 1,
+        duration: 1,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: "#about",
+          start: "top 80%",
+        }
+      }
+    );
+
+    gsap.fromTo(".gsap-about-card",
+      { y: 50, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: "#about",
+          start: "top 75%",
+        }
+      }
+    );
+
+    // GSAP Counter Animation
+    const counterObj = { proj: 0, years: 0, sat: 0 };
+    gsap.to(counterObj, {
+      proj: 500,
+      years: 10,
+      sat: 98,
+      duration: 2.5,
+      ease: "power2.out",
+      scrollTrigger: {
+        trigger: ".gsap-stats-banner",
+        start: "top 85%",
+      },
+      onUpdate: () => {
+        setStatProj(Math.floor(counterObj.proj));
+        setStatYears(Math.floor(counterObj.years));
+        setStatSat(Math.floor(counterObj.sat));
+      }
+    });
+
+    // 3. Services Section Animations
+    gsap.fromTo(".gsap-services-header",
+      { y: 40, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: "#services",
+          start: "top 85%",
+        }
+      }
+    );
+
+    gsap.fromTo(".gsap-service-card",
+      { y: 60, opacity: 0, scale: 0.95 },
+      {
+        y: 0,
+        opacity: 1,
+        scale: 1,
+        duration: 0.9,
+        stagger: 0.15,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".gsap-services-grid",
+          start: "top 80%",
+        }
+      }
+    );
+
+    // 4. Work Section Animations
+    gsap.fromTo(".gsap-work-header",
+      { y: 40, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: "#work",
+          start: "top 85%",
+        }
+      }
+    );
+
+    gsap.fromTo(".gsap-work-card",
+      { y: 50, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        stagger: 0.12,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".gsap-work-grid",
+          start: "top 80%",
+        }
+      }
+    );
+
+    // 5. Clients Section Animations
+    gsap.fromTo(".gsap-clients-header",
+      { y: 30, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: "#clients",
+          start: "top 85%",
+        }
+      }
+    );
+
+    gsap.fromTo(".gsap-client-logo",
+      { scale: 0.8, opacity: 0 },
+      {
+        scale: 1,
+        opacity: 1,
+        duration: 0.6,
+        stagger: 0.08,
+        ease: "back.out(1.5)",
+        scrollTrigger: {
+          trigger: ".gsap-clients-grid",
+          start: "top 85%",
+        }
+      }
+    );
+
+    // 6. Contact Section Animations
+    gsap.fromTo(".gsap-contact-info",
+      { x: -50, opacity: 0 },
+      {
+        x: 0,
+        opacity: 1,
+        duration: 0.9,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: "#contact",
+          start: "top 80%",
+        }
+      }
+    );
+
+    gsap.fromTo(".gsap-contact-form",
+      { x: 50, opacity: 0 },
+      {
+        x: 0,
+        opacity: 1,
+        duration: 0.9,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: "#contact",
+          start: "top 80%",
+        }
+      }
+    );
+
+    // Guarantee ScrollTrigger refresh after setup
+    setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 300);
+
   }, []);
 
   const openQuoteModal = (serviceName: string) => {
@@ -296,9 +510,12 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-black text-zinc-100 font-sans selection:bg-[#e50914] selection:text-white antialiased overflow-x-hidden relative">
       
-      {/* Immersive ambient glows */}
-      <div className="absolute top-[10%] left-[-10%] w-[50%] h-[50%] bg-[#e50914]/5 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute top-[40%] right-[-10%] w-[45%] h-[45%] bg-[#e50914]/4 rounded-full blur-[180px] pointer-events-none" />
+      {/* GSAP Top Scroll Progress Bar */}
+      <div className="gsap-progress-bar fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#e50914] via-red-500 to-[#e50914] z-[100] origin-left scale-x-0 shadow-[0_0_12px_#e50914]" />
+
+      {/* Immersive ambient glows with GSAP parallax */}
+      <div className="gsap-glow-1 absolute top-[10%] left-[-10%] w-[50%] h-[50%] bg-[#e50914]/5 rounded-full blur-[150px] pointer-events-none" />
+      <div className="gsap-glow-2 absolute top-[40%] right-[-10%] w-[45%] h-[45%] bg-[#e50914]/4 rounded-full blur-[180px] pointer-events-none" />
       <div className="absolute bottom-[15%] left-[20%] w-[35%] h-[35%] bg-[#e50914]/3 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Main sticky navigation header */}
@@ -313,7 +530,7 @@ export default function Home() {
             <Logo size="md" />
           </a>
 
-          {/* Desktop Nav Links with premium center sliding underlines */}
+          {/* Desktop Nav Links */}
           <nav className="hidden lg:flex items-center gap-8 font-medium text-sm text-zinc-400">
             <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="relative py-1 hover:text-white transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-center after:scale-x-0 after:bg-[#e50914] after:transition-transform after:duration-300 hover:after:scale-x-100">HOME</a>
             <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection("about"); }} className="relative py-1 hover:text-white transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-center after:scale-x-0 after:bg-[#e50914] after:transition-transform after:duration-300 hover:after:scale-x-100">ABOUT</a>
@@ -420,23 +637,23 @@ export default function Home() {
       {/* Main Container */}
       <main className="relative z-10">
         
-        {/* HERO SECTION - Entry Animated */}
+        {/* HERO SECTION - GSAP Animated */}
         <section className="min-h-screen flex flex-col justify-center max-w-7xl mx-auto px-6 pt-24 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             {/* Visual description */}
             <div className="lg:col-span-8 space-y-8">
-              <div className="inline-flex items-center gap-2 bg-[#e50914]/10 border border-[#e50914]/30 px-3.5 py-1.5 rounded-full text-[#e50914] text-xs font-bold tracking-wider uppercase animate-fade-in opacity-0 [animation-fill-mode:forwards] [animation-delay:100ms]">
+              <div className="gsap-hero-badge inline-flex items-center gap-2 bg-[#e50914]/10 border border-[#e50914]/30 px-3.5 py-1.5 rounded-full text-[#e50914] text-xs font-bold tracking-wider uppercase">
                 <Zap className="w-3.5 h-3.5" /> Premium Trans-Media Production Agency
               </div>
-              <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-white leading-none animate-fade-in-up opacity-0 [animation-fill-mode:forwards] [animation-delay:250ms]">
+              <h1 className="gsap-hero-title text-5xl sm:text-7xl font-black tracking-tight text-white leading-none">
                 CREATING STORIES <br />
                 THAT <span className="text-[#e50914] relative inline-block">DEMAND</span> ATTENTION.
               </h1>
-              <p className="text-zinc-400 text-lg sm:text-xl font-light leading-relaxed max-w-2xl animate-fade-in-up opacity-0 [animation-fill-mode:forwards] [animation-delay:450ms]">
+              <p className="gsap-hero-desc text-zinc-400 text-lg sm:text-xl font-light leading-relaxed max-w-2xl">
                 We are a full-service creative agency blending professional cinema-grade production, visual brand identities, and high-performance engineering to scale global platforms.
               </p>
-              <div className="flex flex-wrap gap-4 pt-2 animate-fade-in-up opacity-0 [animation-fill-mode:forwards] [animation-delay:650ms]">
+              <div className="gsap-hero-btns flex flex-wrap gap-4 pt-2">
                 <Button 
                   onClick={() => openQuoteModal("Photography")}
                   className="bg-[#e50914] hover:bg-[#b8070f] hover:scale-105 active:scale-95 text-white font-bold h-12 px-8 rounded-lg shadow-lg shadow-[#e50914]/10 flex items-center gap-2 cursor-pointer transition-all duration-300"
@@ -454,7 +671,7 @@ export default function Home() {
             </div>
 
             {/* Visual element representing a modern studio setup */}
-            <div className="lg:col-span-4 relative hidden lg:block select-none animate-zoom-in opacity-0 [animation-fill-mode:forwards] [animation-delay:450ms]">
+            <div className="gsap-hero-visual lg:col-span-4 relative hidden lg:block select-none">
               <div className="aspect-[4/5] rounded-3xl overflow-hidden border border-zinc-900 bg-zinc-950 p-3 shadow-2xl relative group">
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10" />
                 <img 
@@ -479,18 +696,13 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ABOUT SECTION - Scroll Revealed */}
-        <section 
-          id="about" 
-          className={`py-24 border-t border-zinc-950 bg-black/60 relative transition-all duration-1000 transform ${
-            visibleSections.about ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
-        >
+        {/* ABOUT SECTION - GSAP Animated */}
+        <section id="about" className="py-24 border-t border-zinc-950 bg-black/60 relative">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
               
               {/* Header Details */}
-              <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-32">
+              <div className="gsap-about-header lg:col-span-5 space-y-6 lg:sticky lg:top-32">
                 <span className="text-[#e50914] text-xs font-bold uppercase tracking-widest block">WHO WE ARE</span>
                 <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
                   WE SHAPE THE AESTHETICS OF MODERN BUSINESS.
@@ -505,7 +717,7 @@ export default function Home() {
               <div className="lg:col-span-7 space-y-12">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   
-                  <Card className="bg-[#0b0b0d] border-zinc-900 hover:border-zinc-800 p-6 rounded-2xl space-y-4 hover:-translate-y-1.5 transition-all duration-300 group">
+                  <Card className="gsap-about-card bg-[#0b0b0d] border-zinc-900 hover:border-zinc-800 p-6 rounded-2xl space-y-4 hover:-translate-y-1.5 transition-all duration-300 group">
                     <div className="bg-[#e50914]/10 border border-[#e50914]/20 p-3.5 rounded-xl w-fit text-[#e50914] group-hover:bg-[#e50914] group-hover:text-white transition-all duration-300">
                       <Video className="w-6 h-6" />
                     </div>
@@ -515,7 +727,7 @@ export default function Home() {
                     </p>
                   </Card>
 
-                  <Card className="bg-[#0b0b0d] border-zinc-900 hover:border-zinc-800 p-6 rounded-2xl space-y-4 hover:-translate-y-1.5 transition-all duration-300 group">
+                  <Card className="gsap-about-card bg-[#0b0b0d] border-zinc-900 hover:border-zinc-800 p-6 rounded-2xl space-y-4 hover:-translate-y-1.5 transition-all duration-300 group">
                     <div className="bg-[#e50914]/10 border border-[#e50914]/20 p-3.5 rounded-xl w-fit text-[#e50914] group-hover:bg-[#e50914] group-hover:text-white transition-all duration-300">
                       <Sparkles className="w-6 h-6" />
                     </div>
@@ -525,7 +737,7 @@ export default function Home() {
                     </p>
                   </Card>
 
-                  <Card className="bg-[#0b0b0d] border-zinc-900 hover:border-zinc-800 p-6 rounded-2xl space-y-4 hover:-translate-y-1.5 transition-all duration-300 group">
+                  <Card className="gsap-about-card bg-[#0b0b0d] border-zinc-900 hover:border-zinc-800 p-6 rounded-2xl space-y-4 hover:-translate-y-1.5 transition-all duration-300 group">
                     <div className="bg-[#e50914]/10 border border-[#e50914]/20 p-3.5 rounded-xl w-fit text-[#e50914] group-hover:bg-[#e50914] group-hover:text-white transition-all duration-300">
                       <Globe className="w-6 h-6" />
                     </div>
@@ -535,7 +747,7 @@ export default function Home() {
                     </p>
                   </Card>
 
-                  <Card className="bg-[#0b0b0d] border-zinc-900 hover:border-zinc-800 p-6 rounded-2xl space-y-4 hover:-translate-y-1.5 transition-all duration-300 group">
+                  <Card className="gsap-about-card bg-[#0b0b0d] border-zinc-900 hover:border-zinc-800 p-6 rounded-2xl space-y-4 hover:-translate-y-1.5 transition-all duration-300 group">
                     <div className="bg-[#e50914]/10 border border-[#e50914]/20 p-3.5 rounded-xl w-fit text-[#e50914] group-hover:bg-[#e50914] group-hover:text-white transition-all duration-300">
                       <Megaphone className="w-6 h-6" />
                     </div>
@@ -547,18 +759,18 @@ export default function Home() {
 
                 </div>
 
-                {/* Counter stats banner */}
-                <div className="bg-zinc-950 border border-zinc-900 rounded-3xl p-8 grid grid-cols-3 gap-6 text-center">
+                {/* Counter stats banner - GSAP Powered */}
+                <div className="gsap-stats-banner bg-zinc-950 border border-zinc-900 rounded-3xl p-8 grid grid-cols-3 gap-6 text-center">
                   <div className="space-y-1">
-                    <p className="text-2xl sm:text-4xl font-black text-white">500+</p>
+                    <p className="text-2xl sm:text-4xl font-black text-white">{statProj}+</p>
                     <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-wider">PROJECTS DELIVERED</p>
                   </div>
                   <div className="space-y-1 border-x border-zinc-900">
-                    <p className="text-2xl sm:text-4xl font-black text-[#e50914]">10+</p>
+                    <p className="text-2xl sm:text-4xl font-black text-[#e50914]">{statYears}+</p>
                     <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-wider">YEARS IN STUDIO</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-2xl sm:text-4xl font-black text-white">98%</p>
+                    <p className="text-2xl sm:text-4xl font-black text-white">{statSat}%</p>
                     <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-wider">CLIENT SATISFACTION</p>
                   </div>
                 </div>
@@ -569,17 +781,12 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SERVICES SECTION - Scroll Revealed */}
-        <section 
-          id="services" 
-          className={`py-24 bg-black relative transition-all duration-1000 transform ${
-            visibleSections.services ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
-        >
+        {/* SERVICES SECTION - GSAP Animated */}
+        <section id="services" className="py-24 bg-black relative">
           <div className="max-w-7xl mx-auto px-6">
             
             {/* Header description */}
-            <div className="text-center max-w-2xl mx-auto space-y-4 mb-20">
+            <div className="gsap-services-header text-center max-w-2xl mx-auto space-y-4 mb-20">
               <span className="text-[#e50914] text-xs font-bold uppercase tracking-widest block">SERVICES</span>
               <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
                 OUR CORE CAPABILITIES
@@ -590,14 +797,14 @@ export default function Home() {
             </div>
 
             {/* Grid display of 6 services */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="gsap-services-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {SERVICES_DATA.map((service) => {
                 const IconComp = service.icon;
                 return (
                   <Card 
                     key={service.id} 
                     id={`service-card-${service.id}`}
-                    className="bg-[#0c0c0e] border-zinc-900 hover:border-zinc-800 hover:-translate-y-2 hover:shadow-xl hover:shadow-[#e50914]/5 rounded-2xl overflow-hidden transition-all duration-500 flex flex-col group"
+                    className="gsap-service-card bg-[#0c0c0e] border-zinc-900 hover:border-zinc-800 hover:-translate-y-2 hover:shadow-xl hover:shadow-[#e50914]/5 rounded-2xl overflow-hidden flex flex-col group transition-all duration-300"
                   >
                     {/* Tiny visual card header */}
                     <div className="h-44 w-full relative overflow-hidden select-none bg-zinc-950">
@@ -650,17 +857,12 @@ export default function Home() {
           </div>
         </section>
 
-        {/* WORK / PORTFOLIO SECTION - Scroll Revealed */}
-        <section 
-          id="work" 
-          className={`py-24 border-t border-zinc-950 bg-black/60 relative transition-all duration-1000 transform ${
-            visibleSections.work ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
-        >
+        {/* WORK / PORTFOLIO SECTION - GSAP Animated */}
+        <section id="work" className="py-24 border-t border-zinc-950 bg-black/60 relative">
           <div className="max-w-7xl mx-auto px-6">
             
             {/* Header details */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-6 border-b border-zinc-900 mb-12">
+            <div className="gsap-work-header flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-6 border-b border-zinc-900 mb-12">
               <div className="space-y-4">
                 <span className="text-[#e50914] text-xs font-bold uppercase tracking-widest block">PORTFOLIO</span>
                 <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
@@ -687,11 +889,11 @@ export default function Home() {
             </div>
 
             {/* Grid listing */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="gsap-work-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredProjects.map((project) => (
                 <div 
                   key={project.id} 
-                  className="group relative rounded-2xl overflow-hidden border border-zinc-900 bg-[#0d0d0f] aspect-[4/3] cursor-pointer shadow-lg select-none hover:shadow-xl hover:shadow-[#e50914]/5 transition-all duration-500"
+                  className="gsap-work-card group relative rounded-2xl overflow-hidden border border-zinc-900 bg-[#0d0d0f] aspect-[4/3] cursor-pointer shadow-lg select-none hover:shadow-xl hover:shadow-[#e50914]/5 transition-all duration-500"
                 >
                   {/* Photo content */}
                   <img 
@@ -715,17 +917,12 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CLIENTS SECTION - Scroll Revealed */}
-        <section 
-          id="clients" 
-          className={`py-24 bg-black relative transition-all duration-1000 transform ${
-            visibleSections.clients ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
-        >
+        {/* CLIENTS SECTION - GSAP Animated */}
+        <section id="clients" className="py-24 bg-black relative">
           <div className="max-w-7xl mx-auto px-6">
             
             {/* Title */}
-            <div className="text-center max-w-xl mx-auto space-y-3 mb-16">
+            <div className="gsap-clients-header text-center max-w-xl mx-auto space-y-3 mb-16">
               <span className="text-[#e50914] text-xs font-bold uppercase tracking-widest block">TRUSTED BY</span>
               <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
                 OUR ESTEEMED CLIENTS
@@ -733,11 +930,11 @@ export default function Home() {
             </div>
 
             {/* Clients Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 items-center">
+            <div className="gsap-clients-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 items-center">
               {CLIENTS_DATA.map((client, index) => (
                 <div 
                   key={index}
-                  className="bg-[#0b0b0d] border border-zinc-900 rounded-2xl h-28 flex flex-col items-center justify-center p-4 hover:border-zinc-800 hover:-translate-y-1 hover:bg-[#e50914]/5 transition-all duration-300 group cursor-default"
+                  className="gsap-client-logo bg-[#0b0b0d] border border-zinc-900 rounded-2xl h-28 flex flex-col items-center justify-center p-4 hover:border-zinc-800 hover:-translate-y-1 hover:bg-[#e50914]/5 transition-all duration-300 group cursor-default"
                 >
                   <span className="text-zinc-650 group-hover:text-white font-sans font-black tracking-widest text-lg transition-colors select-none">
                     {client.logoText}
@@ -752,18 +949,13 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CONTACT SECTION WITH FORM - Scroll Revealed */}
-        <section 
-          id="contact" 
-          className={`py-24 border-t border-zinc-950 bg-black/60 relative transition-all duration-1000 transform ${
-            visibleSections.contact ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
-        >
+        {/* CONTACT SECTION WITH FORM - GSAP Animated */}
+        <section id="contact" className="py-24 border-t border-zinc-950 bg-black/60 relative">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
               
               {/* Information Area */}
-              <div className="lg:col-span-5 space-y-10">
+              <div className="gsap-contact-info lg:col-span-5 space-y-10">
                 <div className="space-y-4">
                   <span className="text-[#e50914] text-xs font-bold uppercase tracking-widest block">GET IN TOUCH</span>
                   <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
@@ -843,7 +1035,7 @@ export default function Home() {
               </div>
 
               {/* Form Area */}
-              <div className="lg:col-span-7">
+              <div className="gsap-contact-form lg:col-span-7">
                 <Card className="bg-[#0b0b0d] border-zinc-900 p-8 rounded-3xl shadow-2xl relative">
                   
                   <h3 className="text-xl font-bold text-white mb-6 uppercase tracking-wider flex items-center gap-2">
