@@ -189,66 +189,15 @@ const PROJECTS_DATA: Project[] = [
 ];
 
 const CLIENTS_DATA = [
-  {
-    id: "tesla",
-    logoText: "TESLA",
-    svg: (
-      <svg className="h-6 w-auto fill-current text-zinc-300 group-hover:text-white transition-colors duration-300" viewBox="0 0 342 35">
-        <path d="M156.4 0h-29.2v4.8h12.1v29.8h4.9V4.8h12.2V0zM68.7 0H27.5v4.8h15.6v29.8h4.9V4.8h20.7V0zM250.7 0h-4.9v29.8h19.5v-4.8h-14.6V0zM342.3 34.6l-14.6-34.6h-5.2l-14.6 34.6h5.3l3.6-8.7h16.6l3.6 8.7h5.3zm-23.7-13.4l6.1-14.7 6.1 14.7h-12.2zM218.4 0h-34.4v34.6h4.9V20.2h24.6v-4.8h-24.6V4.8h29.5V0z"/>
-      </svg>
-    )
-  },
-  {
-    id: "mas",
-    logoText: "MAS",
-    svg: (
-      <div className="flex items-center gap-2 font-black tracking-tighter text-2xl">
-        <span className="bg-[#e50914] text-white px-2.5 py-0.5 rounded font-extrabold text-base">MAS</span>
-        <span className="text-zinc-300 group-hover:text-white font-bold text-xs tracking-widest transition-colors duration-300">HOLDINGS</span>
-      </div>
-    )
-  },
-  {
-    id: "jkh",
-    logoText: "JKH",
-    svg: (
-      <div className="flex items-center gap-1 font-serif font-black tracking-widest text-lg text-zinc-300 group-hover:text-white transition-colors duration-300">
-        <span>JOHN KEELLS</span>
-      </div>
-    )
-  },
-  {
-    id: "dialog",
-    logoText: "DIALOG",
-    svg: (
-      <div className="flex items-center gap-2 font-extrabold tracking-wider text-lg text-zinc-300 group-hover:text-white transition-colors duration-300">
-        <svg className="w-5 h-5 text-[#e50914] fill-current" viewBox="0 0 24 24">
-          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-        </svg>
-        <span>DIALOG</span>
-      </div>
-    )
-  },
-  {
-    id: "dilmah",
-    logoText: "DILMAH",
-    svg: (
-      <div className="flex items-center gap-2 font-serif font-bold text-lg text-zinc-300 group-hover:text-white tracking-widest transition-colors duration-300">
-        <span className="text-[#e50914] text-xl">🍃</span>
-        <span>Dilmah</span>
-      </div>
-    )
-  },
-  {
-    id: "cinnamon",
-    logoText: "CINNAMON",
-    svg: (
-      <div className="flex items-center gap-2 font-serif font-semibold text-base text-zinc-300 group-hover:text-white tracking-widest transition-colors duration-300">
-        <span className="text-[#e50914] font-bold text-lg">⚜</span>
-        <span>CINNAMON</span>
-      </div>
-    )
-  },
+  { id: "1", logoText: "Logo 1", svg: <img src="/clients/1.png" className="h-32 w-auto object-contain filter brightness-100 invert-0" alt="Logo 1" /> },
+  { id: "2", logoText: "Logo 2", svg: <img src="/clients/2.png" className="h-32 w-auto object-contain filter brightness-100 invert-0" alt="Logo 2" /> },
+  { id: "3", logoText: "Logo 3", svg: <img src="/clients/3.png" className="h-32 w-auto object-contain filter brightness-100 invert-0" alt="Logo 3" /> },
+  { id: "4", logoText: "Logo 4", svg: <img src="/clients/4.png" className="h-32 w-auto object-contain filter brightness-100 invert-0" alt="Logo 4" /> },
+  { id: "5", logoText: "Logo 5", svg: <img src="/clients/5.png" className="h-32 w-auto object-contain filter brightness-100 invert-0" alt="Logo 5" /> },
+  { id: "6", logoText: "Logo 6", svg: <img src="/clients/6.png" className="h-32 w-auto object-contain filter brightness-100 invert-0" alt="Logo 6" /> },
+  // { id: "7", logoText: "Logo 7", svg: <img src="/clients/7.png" className="h-32 w-auto object-contain filter brightness-100 invert-0" alt="Logo 7" /> },
+  { id: "8", logoText: "Logo 8", svg: <img src="/clients/8.png" className="h-32 w-auto object-contain filter brightness-100 invert-0" alt="Logo 8" /> },
+  { id: "9", logoText: "Logo 9", svg: <img src="/clients/9.png" className="h-32 w-auto object-contain filter brightness-100 invert-0" alt="Logo 9" /> },
 ];
 
 export default function Home() {
