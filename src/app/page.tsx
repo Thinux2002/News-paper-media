@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -14,16 +14,16 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Logo } from "@/components/logo";
 import { QuoteDialog } from "@/components/quote-dialog";
 
-import { 
-  Camera, 
-  Video, 
-  Palette, 
-  Megaphone, 
-  Globe, 
-  Mic, 
-  ArrowUpRight, 
-  Menu, 
-  Mail, 
+import {
+  Camera,
+  Video,
+  Palette,
+  Megaphone,
+  Globe,
+  Mic,
+  ArrowUpRight,
+  Menu,
+  Mail,
   ChevronRight,
   ChevronDown,
   Check,
@@ -200,6 +200,118 @@ const CLIENTS_DATA = [
   { id: "9", logoText: "Logo 9", svg: <img src="/clients/9.png" className="h-32 w-auto object-contain filter brightness-100 invert-0" alt="Logo 9" /> },
 ];
 
+// ─── GSAP 3D Tilt Card ───────────────────────────────────────────────────────
+function WorkCard3D({ project, onClick }: { project: Project; onClick?: () => void }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const glintRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+
+  const animators = useRef<{
+    rotX: ReturnType<typeof gsap.quickTo>;
+    rotY: ReturnType<typeof gsap.quickTo>;
+    glintX: ReturnType<typeof gsap.quickTo>;
+    glintY: ReturnType<typeof gsap.quickTo>;
+    glintO: ReturnType<typeof gsap.quickTo>;
+  } | null>(null);
+
+  const initAnimators = useCallback(() => {
+    if (!innerRef.current || !glintRef.current) return;
+    const cfg = { duration: 0.5, ease: "power2.out" };
+    animators.current = {
+      rotX: gsap.quickTo(innerRef.current, "rotationX", cfg),
+      rotY: gsap.quickTo(innerRef.current, "rotationY", cfg),
+      glintX: gsap.quickTo(glintRef.current, "x", { duration: 0.6, ease: "power2.out" }),
+      glintY: gsap.quickTo(glintRef.current, "y", { duration: 0.6, ease: "power2.out" }),
+      glintO: gsap.quickTo(glintRef.current, "opacity", { duration: 0.35 }),
+    };
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current || !animators.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = (e.clientX - cx) / (rect.width / 2);   // -1 → 1
+    const dy = (e.clientY - cy) / (rect.height / 2);  // -1 → 1
+
+    animators.current.rotY(dx * 16);
+    animators.current.rotX(-dy * 12);
+
+    // glint follows cursor within the card
+    animators.current.glintX((dx * rect.width) / 2);
+    animators.current.glintY((dy * rect.height) / 2);
+    animators.current.glintO(0.18);
+  }, []);
+
+  const handleMouseEnter = useCallback(() => {
+    if (!innerRef.current) return;
+    gsap.to(innerRef.current, { scale: 1.04, duration: 0.4, ease: "power2.out" });
+    animators.current?.glintO(0.12);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (!innerRef.current || !animators.current) return;
+    animators.current.rotX(0);
+    animators.current.rotY(0);
+    animators.current.glintO(0);
+    gsap.to(innerRef.current, { scale: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" });
+  }, []);
+
+  return (
+    <div
+      ref={cardRef}
+      className="gsap-work-card group relative cursor-pointer select-none"
+      style={{ perspective: "900px" }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={(e) => { initAnimators(); handleMouseEnter(); }}
+      onMouseLeave={handleMouseLeave}
+      onClick={onClick}
+    >
+      {/* 3D rotating inner wrapper */}
+      <div
+        ref={innerRef}
+        className="relative rounded-2xl overflow-hidden border border-zinc-900 bg-[#0d0d0f] aspect-[4/3] shadow-lg"
+        style={{ transformStyle: "preserve-3d", willChange: "transform" }}
+      >
+        {/* Glint / specular highlight */}
+        <div
+          ref={glintRef}
+          className="pointer-events-none absolute inset-0 z-30 rounded-2xl"
+          style={{
+            opacity: 0,
+            background: "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.55) 0%, transparent 65%)",
+            mixBlendMode: "overlay",
+          }}
+        />
+
+        {/* Project image */}
+        <img
+          src={project.imageUrl}
+          alt={project.title}
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+        />
+
+
+
+        {/* Dark overlay + metadata */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 sm:opacity-0 sm:group-hover:opacity-95 transition-opacity duration-300 p-6 flex flex-col justify-end z-20">
+          <div
+            className="space-y-1.5 translate-y-0 sm:translate-y-4 sm:group-hover:translate-y-0 transition-transform duration-300"
+            style={{ transform: "translateZ(32px)" }}
+          >
+            <h4 className="text-lg font-extrabold text-white leading-snug">{project.title}</h4>
+            <p className="text-zinc-400 text-xs font-medium">Client: {project.client}</p>
+            <span className="inline-flex items-center gap-1 text-[#e50914] text-[10px] font-bold uppercase tracking-widest">
+              View Project <ArrowUpRight className="w-3 h-3" />
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
@@ -269,26 +381,76 @@ export default function Home() {
       }
     });
 
-    // 1. Hero Entrance Sequence
-    const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
-    heroTl
-      .fromTo(".gsap-hero-badge", { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 })
-      .fromTo(".gsap-hero-title", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 1 }, "-=0.5")
-      .fromTo(".gsap-hero-desc", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, "-=0.6")
-      .fromTo(".gsap-hero-btns", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, "-=0.6")
-      .fromTo(".gsap-hero-visual", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 1.1 }, "-=0.8");
+    // 1. Hero — Immersive Entrance Sequence
+    // Overlay fade-in
+    gsap.fromTo(".gsap-hero-overlay",
+      { opacity: 0 },
+      { opacity: 1, duration: 1.4, ease: "power2.inOut" }
+    );
 
-    // Continuous floating motion for hero visual
-    gsap.to(".gsap-hero-visual", {
-      y: -12,
-      duration: 3,
+    // Stagger each word of the headline
+    gsap.fromTo(".gsap-hero-word",
+      { y: 110, opacity: 0, skewY: 6 },
+      {
+        y: 0,
+        opacity: 1,
+        skewY: 0,
+        duration: 1.0,
+        stagger: 0.08,
+        ease: "expo.out",
+        delay: 0.3,
+      }
+    );
+
+    gsap.fromTo(".gsap-hero-badge",
+      { y: -24, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.9, ease: "power3.out", delay: 0.2 }
+    );
+    gsap.fromTo(".gsap-hero-desc",
+      { y: 28, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.9, ease: "power3.out", delay: 0.9 }
+    );
+    gsap.fromTo(".gsap-hero-btns",
+      { y: 24, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.9, ease: "power3.out", delay: 1.05 }
+    );
+    gsap.fromTo(".gsap-hero-stats",
+      { y: 24, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.9, stagger: 0.12, ease: "power3.out", delay: 1.1 }
+    );
+    gsap.fromTo(".gsap-hero-reel",
+      { x: 80, opacity: 0 },
+      { x: 0, opacity: 1, duration: 1.2, ease: "expo.out", delay: 0.6 }
+    );
+    gsap.fromTo(".gsap-hero-scroll-hint",
+      { opacity: 0, y: 10 },
+      { opacity: 1, y: 0, duration: 1, ease: "power2.out", delay: 1.6 }
+    );
+
+    // Subtle looping pulse on the scroll hint arrow
+    gsap.to(".gsap-scroll-arrow", {
+      y: 6,
+      duration: 1.1,
       repeat: -1,
       yoyo: true,
-      ease: "sine.inOut"
+      ease: "sine.inOut",
+      delay: 2,
+    });
+
+    // Hero background slow parallax on scroll
+    gsap.to(".gsap-hero-bg", {
+      yPercent: 25,
+      ease: "none",
+      scrollTrigger: {
+        trigger: "#hero",
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+      }
     });
 
     // 2. About Section Animations
-    gsap.fromTo(".gsap-about-header", 
+    gsap.fromTo(".gsap-about-header",
       { x: -60, opacity: 0 },
       {
         x: 0,
@@ -496,7 +658,7 @@ export default function Home() {
       const headerOffset = 80;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-      
+
       window.scrollTo({
         top: offsetPosition,
         behavior: "smooth"
@@ -512,7 +674,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 font-sans selection:bg-[#e50914] selection:text-white antialiased overflow-x-hidden relative">
-      
+
       {/* GSAP Top Scroll Progress Bar */}
       <div className="gsap-progress-bar fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#e50914] via-red-500 to-[#e50914] z-[100] origin-left scale-x-0 shadow-[0_0_12px_#e50914]" />
 
@@ -522,11 +684,10 @@ export default function Home() {
       <div className="absolute bottom-[15%] left-[20%] w-[35%] h-[35%] bg-[#e50914]/3 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Main sticky navigation header */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${
-        scrolled 
-          ? "bg-black/85 backdrop-blur-md border-zinc-900 py-4 shadow-xl" 
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${scrolled
+          ? "bg-black/85 backdrop-blur-md border-zinc-900 py-4 shadow-xl"
           : "bg-transparent border-transparent py-6"
-      }`}>
+        }`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           {/* Brand Logo */}
           <a href="#" className="flex items-center" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
@@ -537,7 +698,7 @@ export default function Home() {
           <nav className="hidden lg:flex items-center gap-8 font-medium text-sm text-zinc-400">
             <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="relative py-1 hover:text-white transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-center after:scale-x-0 after:bg-[#e50914] after:transition-transform after:duration-300 hover:after:scale-x-100">HOME</a>
             <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection("about"); }} className="relative py-1 hover:text-white transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-center after:scale-x-0 after:bg-[#e50914] after:transition-transform after:duration-300 hover:after:scale-x-100">ABOUT</a>
-            
+
             {/* Services Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger render={
@@ -551,7 +712,7 @@ export default function Home() {
                 {SERVICES_DATA.map((service) => {
                   const IconComp = service.icon;
                   return (
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       key={service.id}
                       onClick={() => {
                         scrollToSection("services");
@@ -581,7 +742,7 @@ export default function Home() {
 
           {/* Action Button & Responsive trigger */}
           <div className="flex items-center gap-4">
-            <Button 
+            <Button
               onClick={() => openQuoteModal("Photography")}
               className="hidden sm:flex bg-[#e50914] hover:bg-[#b8070f] hover:scale-105 active:scale-95 text-white font-bold px-5 py-2.5 rounded-lg shadow-lg shadow-[#e50914]/10 transition-all duration-300 cursor-pointer uppercase text-xs tracking-wider"
             >
@@ -607,9 +768,9 @@ export default function Home() {
                       <span className="text-xs text-zinc-600 font-bold uppercase tracking-widest block">SERVICES</span>
                       <div className="grid grid-cols-2 gap-3 pl-2">
                         {SERVICES_DATA.map((service) => (
-                          <a 
-                            key={service.id} 
-                            href="#services" 
+                          <a
+                            key={service.id}
+                            href="#services"
                             className="text-sm font-semibold text-zinc-400 hover:text-[#e50914] transition-colors"
                           >
                             {service.title}
@@ -624,7 +785,7 @@ export default function Home() {
                 </div>
 
                 <div className="border-t border-zinc-900 pt-6">
-                  <Button 
+                  <Button
                     className="w-full bg-[#e50914] hover:bg-[#b8070f] text-white py-6 text-sm font-bold uppercase tracking-wider rounded-xl shadow-lg"
                     onClick={() => openQuoteModal("Photography")}
                   >
@@ -639,60 +800,147 @@ export default function Home() {
 
       {/* Main Container */}
       <main className="relative z-10">
-        
-        {/* HERO SECTION - GSAP Animated */}
-        <section className="min-h-screen flex flex-col justify-center max-w-7xl mx-auto px-6 pt-24 pb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Visual description */}
-            <div className="lg:col-span-8 space-y-8">
-              <div className="gsap-hero-badge inline-flex items-center gap-2 bg-[#e50914]/10 border border-[#e50914]/30 px-3.5 py-1.5 rounded-full text-[#e50914] text-xs font-bold tracking-wider uppercase">
-                <Zap className="w-3.5 h-3.5" /> Premium Trans-Media Production Agency
-              </div>
-              <h1 className="gsap-hero-title text-5xl sm:text-7xl font-black tracking-tight text-white leading-none">
-                CREATING STORIES <br />
-                THAT <span className="text-[#e50914] relative inline-block">DEMAND</span> ATTENTION.
-              </h1>
-              <p className="gsap-hero-desc text-zinc-400 text-lg sm:text-xl font-light leading-relaxed max-w-2xl">
-                We are a full-service creative agency blending professional cinema-grade production, visual brand identities, and high-performance engineering to scale global platforms.
-              </p>
-              <div className="gsap-hero-btns flex flex-wrap gap-4 pt-2">
-                <Button 
-                  onClick={() => openQuoteModal("Photography")}
-                  className="bg-[#e50914] hover:bg-[#b8070f] hover:scale-105 active:scale-95 text-white font-bold h-12 px-8 rounded-lg shadow-lg shadow-[#e50914]/10 flex items-center gap-2 cursor-pointer transition-all duration-300"
-                >
-                  Start Project <ArrowUpRight className="w-4 h-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => scrollToSection("work")}
-                  className="border-zinc-800 hover:border-zinc-500 hover:bg-zinc-900/40 hover:scale-105 active:scale-95 text-zinc-300 hover:text-white h-12 px-8 rounded-lg transition-all cursor-pointer"
-                >
-                  Explore Work
-                </Button>
+
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            HERO SECTION — Full-screen Cinematic
+        ═══════════════════════════════════════════════════════════════════ */}
+        <section
+          id="hero"
+          className="relative min-h-screen w-full overflow-hidden flex flex-col"
+        >
+          {/* ── Background Image + Parallax ── */}
+          <div className="gsap-hero-bg absolute inset-0 scale-110 origin-center">
+            <img
+              src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1800"
+              alt=""
+              className="w-full h-full object-cover object-center"
+              aria-hidden="true"
+            />
+          </div>
+
+          {/* ── Layered dark overlays ── */}
+          <div className="gsap-hero-overlay absolute inset-0 bg-gradient-to-b from-black/80 via-black/65 to-black z-[1]" />
+          {/* Horizontal vignette */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-black/40 z-[2] pointer-events-none" />
+          {/* Grain texture overlay */}
+          <div
+            className="absolute inset-0 z-[3] opacity-[0.035] pointer-events-none"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+              backgroundSize: "160px",
+            }}
+          />
+          {/* Red accent glow — bottom left */}
+          <div className="absolute bottom-0 left-0 w-[60%] h-[50%] bg-[#e50914]/8 rounded-full blur-[180px] z-[2] pointer-events-none" />
+          {/* Subtle top-right glow */}
+          <div className="absolute top-[-5%] right-[-5%] w-[40%] h-[45%] bg-[#e50914]/5 rounded-full blur-[140px] z-[2] pointer-events-none" />
+
+          {/* ── Content ── */}
+          <div className="relative z-10 flex flex-col flex-1">
+
+            {/* Main hero copy — vertically centered */}
+            <div className="flex-1 flex items-center">
+              <div className="max-w-7xl w-full mx-auto px-6 pt-28 pb-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-6 items-center">
+
+                {/* ── Left: Text block ── */}
+                <div className="lg:col-span-7 xl:col-span-6 space-y-8">
+
+                  {/* Badge */}
+                  <div className="gsap-hero-badge inline-flex items-center gap-2.5 bg-white/5 backdrop-blur-sm border border-white/10 px-4 py-2 rounded-full text-zinc-300 text-[11px] font-semibold tracking-[0.15em] uppercase">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#e50914] animate-pulse" />
+                    Premium Trans-Media Production Agency
+                  </div>
+
+                  {/* Headline — per-word reveal */}
+                  <h1 className="overflow-hidden">
+                    <div className="flex flex-wrap gap-x-5 gap-y-1 leading-[1.02]">
+                      {["CREATING", "STORIES", "THAT", "DEMAND", "ATTENTION."].map((word, i) => (
+                        <span
+                          key={i}
+                          className="gsap-hero-word inline-block font-black tracking-tight text-white"
+                          style={{
+                            fontSize: "clamp(2.8rem, 6.5vw, 6rem)",
+                            color: word === "DEMAND" ? "#e50914" : undefined,
+                            textShadow: word === "DEMAND" ? "0 0 80px rgba(229,9,20,0.35)" : undefined,
+                          }}
+                        >
+                          {word}
+                        </span>
+                      ))}
+                    </div>
+                  </h1>
+
+                  {/* Description */}
+                  <p className="gsap-hero-desc text-zinc-400 text-base sm:text-lg font-light leading-relaxed max-w-xl">
+                    A full-service creative agency merging cinema-grade production,
+                    iconic brand identities &amp; high-performance digital engineering
+                    — built to scale global platforms.
+                  </p>
+
+                  {/* CTA Buttons */}
+                  <div className="gsap-hero-btns flex flex-wrap gap-4">
+                    <button
+                      onClick={() => openQuoteModal("Photography")}
+                      className="group relative overflow-hidden bg-[#e50914] hover:bg-[#c4070f] text-white font-bold h-13 px-8 py-3.5 rounded-xl shadow-2xl shadow-[#e50914]/25 flex items-center gap-2.5 cursor-pointer transition-all duration-300 hover:scale-[1.03] active:scale-95 text-sm tracking-wide"
+                    >
+                      <span className="relative z-10 flex items-center gap-2">Start Your Project <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></span>
+                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                    </button>
+                    <button
+                      onClick={() => scrollToSection("work")}
+                      className="group h-13 px-8 py-3.5 rounded-xl border border-white/15 hover:border-white/30 bg-white/5 hover:bg-white/10 backdrop-blur-sm text-zinc-300 hover:text-white font-semibold text-sm flex items-center gap-2 cursor-pointer transition-all duration-300 hover:scale-[1.03] active:scale-95"
+                    >
+                      Explore Work <ChevronRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </button>
+                  </div>
+
+                  {/* Floating stat chips
+                  <div className="flex flex-wrap gap-3 pt-2">
+                    {[
+                      { value: "500+", label: "Projects" },
+                      { value: "10+", label: "Years" },
+                      { value: "98%", label: "Satisfaction" },
+                      { value: "6", label: "Services" },
+                    ].map((stat) => (
+                      <div
+                        key={stat.label}
+                        className="gsap-hero-stats flex items-center gap-2.5 bg-white/5 backdrop-blur-sm border border-white/8 px-4 py-2.5 rounded-full"
+                      >
+                        <span className="text-white font-black text-sm">{stat.value}</span>
+                        <span className="text-zinc-500 text-xs font-medium uppercase tracking-wider">{stat.label}</span>
+                      </div>
+                    ))}
+                  </div> */}
+
+                </div>
+
+                {/* ── Right: Film-strip reel of services ── */}
+                
+
               </div>
             </div>
 
-            {/* Visual element representing a modern studio setup */}
-            <div className="gsap-hero-visual lg:col-span-4 relative hidden lg:block select-none">
-              <div className="aspect-[4/5] rounded-3xl overflow-hidden border border-zinc-900 bg-zinc-950 p-3 shadow-2xl relative group">
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10" />
-                <img 
-                  src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=800" 
-                  alt="Cinema Production Rig" 
-                  className="w-full h-full object-cover rounded-2xl grayscale group-hover:grayscale-0 transition-all duration-700 ease-out" 
-                />
-                
-                {/* Micro Floating Info Card
-                <div className="absolute bottom-6 left-6 right-6 z-20 bg-[#0d0d10]/95 backdrop-blur border border-zinc-900 p-4 rounded-xl shadow-lg flex justify-between items-center">
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Active Capture</p>
-                    <p className="text-sm font-extrabold text-white">4K RED Cinema Spec</p>
+            {/* ── Bottom bar: scroll indicator + horizontal rule ── */}
+            <div className="gsap-hero-scroll-hint relative z-10 border-t border-white/6 bg-black/20 backdrop-blur-sm">
+              <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+                {/* Scroll indicator */}
+                <button
+                  onClick={() => scrollToSection("about")}
+                  className="flex items-center gap-3 text-zinc-500 hover:text-white transition-colors duration-300 group cursor-pointer"
+                >
+                  <div className="gsap-scroll-arrow w-8 h-8 rounded-full border border-zinc-700 group-hover:border-[#e50914] flex items-center justify-center transition-colors duration-300">
+                    <ChevronDown className="w-4 h-4" />
                   </div>
-                  <div className="bg-[#e50914]/15 text-[#e50914] px-2.5 py-1 rounded text-xs font-bold uppercase">
-                    RED
-                  </div>
-                </div> */}
+                  <span className="text-[10px] uppercase tracking-[0.2em] font-semibold">Scroll to Discover</span>
+                </button>
+
+                {/* Service tags */}
+                <div className="hidden sm:flex items-center gap-4 text-[10px] text-zinc-600 uppercase tracking-widest font-semibold">
+                  {["Photography", "Video", "Branding", "Web", "Marketing", "Podcast"].map((s) => (
+                    <span key={s} className="hover:text-zinc-400 transition-colors cursor-default">{s}</span>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -703,7 +951,7 @@ export default function Home() {
         <section id="about" className="py-24 border-t border-zinc-950 bg-black/60 relative">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-              
+
               {/* Header Details */}
               <div className="gsap-about-header lg:col-span-5 space-y-6 lg:sticky lg:top-32">
                 <span className="text-[#e50914] text-xs font-bold uppercase tracking-widest block">WHO WE ARE</span>
@@ -719,7 +967,7 @@ export default function Home() {
               {/* Grid cards detailing features & stats */}
               <div className="lg:col-span-7 space-y-12">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  
+
                   <Card className="gsap-about-card bg-[#0b0b0d] border-zinc-900 hover:border-zinc-800 p-6 rounded-2xl space-y-4 hover:-translate-y-1.5 transition-all duration-300 group">
                     <div className="bg-[#e50914]/10 border border-[#e50914]/20 p-3.5 rounded-xl w-fit text-[#e50914] group-hover:bg-[#e50914] group-hover:text-white transition-all duration-300">
                       <Video className="w-6 h-6" />
@@ -787,7 +1035,7 @@ export default function Home() {
         {/* SERVICES SECTION - GSAP Animated */}
         <section id="services" className="py-24 bg-black relative">
           <div className="max-w-7xl mx-auto px-6">
-            
+
             {/* Header description */}
             <div className="gsap-services-header text-center max-w-2xl mx-auto space-y-4 mb-20">
               <span className="text-[#e50914] text-xs font-bold uppercase tracking-widest block">SERVICES</span>
@@ -804,18 +1052,18 @@ export default function Home() {
               {SERVICES_DATA.map((service) => {
                 const IconComp = service.icon;
                 return (
-                  <Card 
-                    key={service.id} 
+                  <Card
+                    key={service.id}
                     id={`service-card-${service.id}`}
                     className="gsap-service-card bg-[#0c0c0e] border-zinc-900 hover:border-zinc-800 hover:-translate-y-2 hover:shadow-xl hover:shadow-[#e50914]/5 rounded-2xl overflow-hidden flex flex-col group transition-all duration-300"
                   >
                     {/* Tiny visual card header */}
                     <div className="h-44 w-full relative overflow-hidden select-none bg-zinc-950">
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-[#0c0c0e]/30 to-transparent z-10" />
-                      <img 
-                        src={service.imageUrl} 
-                        alt={service.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+                      <img
+                        src={service.imageUrl}
+                        alt={service.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                       />
                       <div className="absolute top-4 left-4 bg-black/75 backdrop-blur-sm border border-zinc-900 p-2.5 rounded-xl text-[#e50914] z-20 group-hover:bg-[#e50914] group-hover:text-white transition-colors duration-300">
                         <IconComp className="w-5 h-5" />
@@ -845,7 +1093,7 @@ export default function Home() {
 
                     {/* Card CTA */}
                     <CardFooter className="px-6 py-4 border-t border-zinc-900 bg-black/30">
-                      <Button 
+                      <Button
                         onClick={() => openQuoteModal(service.title)}
                         className="w-full bg-transparent border border-zinc-800 hover:border-[#e50914] hover:bg-[#e50914] hover:scale-[1.02] text-zinc-300 hover:text-white rounded-lg py-2.5 text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer transition-all duration-350"
                       >
@@ -863,7 +1111,7 @@ export default function Home() {
         {/* WORK / PORTFOLIO SECTION - GSAP Animated */}
         <section id="work" className="py-24 border-t border-zinc-950 bg-black/60 relative">
           <div className="max-w-7xl mx-auto px-6">
-            
+
             {/* Header details */}
             <div className="gsap-work-header flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-6 border-b border-zinc-900 mb-12">
               <div className="space-y-4">
@@ -879,11 +1127,10 @@ export default function Home() {
                   <Button
                     key={tab}
                     onClick={() => setActiveWorkTab(tab)}
-                    className={`h-9 px-4 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-350 cursor-pointer ${
-                      activeWorkTab === tab
+                    className={`h-9 px-4 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-350 cursor-pointer ${activeWorkTab === tab
                         ? "bg-[#e50914] text-white shadow-lg shadow-[#e50914]/20 scale-105"
                         : "bg-transparent border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-650 hover:scale-105"
-                    }`}
+                      }`}
                   >
                     {tab === "Website Development" ? "Web Dev" : tab}
                   </Button>
@@ -891,29 +1138,13 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Grid listing */}
+            {/* Grid listing — GSAP 3D Tilt Cards */}
             <div className="gsap-work-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredProjects.map((project) => (
-                <div 
-                  key={project.id} 
-                  className="gsap-work-card group relative rounded-2xl overflow-hidden border border-zinc-900 bg-[#0d0d0f] aspect-[4/3] cursor-pointer shadow-lg select-none hover:shadow-xl hover:shadow-[#e50914]/5 transition-all duration-500"
-                >
-                  {/* Photo content */}
-                  <img 
-                    src={project.imageUrl} 
-                    alt={project.title} 
-                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
-                  />
-                  
-                  {/* Dark overlay showing metadata on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 sm:opacity-0 sm:group-hover:opacity-95 transition-opacity duration-300 p-6 flex flex-col justify-end z-20">
-                    <div className="space-y-1.5 translate-y-0 sm:translate-y-4 sm:group-hover:translate-y-0 transition-transform duration-300">
-                      <span className="text-[#e50914] text-[10px] font-bold uppercase tracking-widest block">{project.category}</span>
-                      <h4 className="text-lg font-extrabold text-white leading-snug">{project.title}</h4>
-                      <p className="text-zinc-500 text-xs font-medium">Client: {project.client}</p>
-                    </div>
-                  </div>
-                </div>
+                <WorkCard3D
+                  key={project.id}
+                  project={project}
+                />
               ))}
             </div>
 
@@ -923,7 +1154,7 @@ export default function Home() {
         {/* CLIENTS SECTION - GSAP Animated */}
         <section id="clients" className="py-24 bg-black relative">
           <div className="max-w-7xl mx-auto px-6">
-            
+
             {/* Title */}
             <div className="gsap-clients-header text-center max-w-xl mx-auto space-y-3 mb-16">
               <span className="text-[#e50914] text-xs font-bold uppercase tracking-widest block">TRUSTED BY</span>
@@ -936,7 +1167,7 @@ export default function Home() {
             <div className="relative w-full overflow-hidden py-4 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
               <div className="animate-marquee flex items-center gap-6">
                 {[...CLIENTS_DATA, ...CLIENTS_DATA, ...CLIENTS_DATA].map((client, index) => (
-                  <div 
+                  <div
                     key={index}
                     className="gsap-client-logo bg-[#0b0b0d] border border-zinc-900 hover:border-[#e50914]/40 rounded-2xl h-24 w-56 flex-shrink-0 flex items-center justify-center p-6 hover:scale-105 hover:bg-[#e50914]/10 hover:shadow-xl hover:shadow-[#e50914]/10 transition-all duration-300 cursor-pointer"
                   >
@@ -953,7 +1184,7 @@ export default function Home() {
         <section id="contact" className="py-24 border-t border-zinc-950 bg-black/60 relative">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-              
+
               {/* Information Area */}
               <div className="gsap-contact-info lg:col-span-5 space-y-10">
                 <div className="space-y-4">
@@ -967,7 +1198,7 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-6 text-sm text-zinc-300">
-                  
+
                   <div className="flex gap-4 items-start">
                     <div className="bg-[#e50914]/15 border border-[#e50914]/25 p-3 rounded-xl text-[#e50914] shrink-0">
                       <MapPin className="w-5 h-5" />
@@ -1011,22 +1242,22 @@ export default function Home() {
                   <div className="flex gap-3">
                     <a href="#" className="bg-zinc-950 hover:bg-[#e50914] border border-zinc-900 p-2.5 rounded-lg text-zinc-400 hover:text-white hover:scale-105 active:scale-95 transition-all duration-305" aria-label="Instagram">
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
                       </svg>
                     </a>
                     <a href="#" className="bg-zinc-950 hover:bg-[#e50914] border border-zinc-900 p-2.5 rounded-lg text-zinc-400 hover:text-white hover:scale-105 active:scale-95 transition-all duration-305" aria-label="Facebook">
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M9 8H7v3h2v9h3v-9h3l.5-3H12V6c0-.88.39-1 1-1h2V2h-3c-2.9 0-5 1.55-5 4.5V8z"/>
+                        <path d="M9 8H7v3h2v9h3v-9h3l.5-3H12V6c0-.88.39-1 1-1h2V2h-3c-2.9 0-5 1.55-5 4.5V8z" />
                       </svg>
                     </a>
                     <a href="#" className="bg-zinc-950 hover:bg-[#e50914] border border-zinc-900 p-2.5 rounded-lg text-zinc-400 hover:text-white hover:scale-105 active:scale-95 transition-all duration-305" aria-label="Twitter">
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M23.953 4.57a10 10 0 0 1-2.825.775 4.958 4.958 0 0 0 2.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 0 0-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 0 0-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 0 1-2.228-.616v.06a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.212.085 4.936 4.936 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 0 0 7.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0 0 24 4.59z"/>
+                        <path d="M23.953 4.57a10 10 0 0 1-2.825.775 4.958 4.958 0 0 0 2.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 0 0-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 0 0-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 0 1-2.228-.616v.06a4.923 4.923 0 0 0 3.946 4.827 4.996 4.996 0 0 1-2.212.085 4.936 4.936 0 0 0 4.604 3.417 9.867 9.867 0 0 1-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 0 0 7.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0 0 24 4.59z" />
                       </svg>
                     </a>
                     <a href="#" className="bg-zinc-950 hover:bg-[#e50914] border border-zinc-900 p-2.5 rounded-lg text-zinc-400 hover:text-white hover:scale-105 active:scale-95 transition-all duration-305" aria-label="Youtube">
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11C4.483 20.455 12 20.455 12 20.455s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11C4.483 20.455 12 20.455 12 20.455s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                       </svg>
                     </a>
                   </div>
@@ -1037,7 +1268,7 @@ export default function Home() {
               {/* Form Area */}
               <div className="gsap-contact-form lg:col-span-7">
                 <Card className="bg-[#0b0b0d] border-zinc-900 p-8 rounded-3xl shadow-2xl relative">
-                  
+
                   <h3 className="text-xl font-bold text-white mb-6 uppercase tracking-wider flex items-center gap-2">
                     <Send className="w-4 h-4 text-[#e50914]" /> Write a Message
                   </h3>
@@ -1056,7 +1287,7 @@ export default function Home() {
                     </div>
                   ) : (
                     <form onSubmit={handleContactSubmit} className="space-y-4">
-                      
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <Label htmlFor="contact-name" className="text-zinc-300 text-xs font-semibold uppercase tracking-wider">Your Name</Label>
@@ -1143,7 +1374,7 @@ export default function Home() {
       <footer className="border-t border-zinc-900 bg-zinc-980 relative z-10 text-zinc-400 text-xs">
         <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
-            
+
             {/* Column 1 - Brand & Identity */}
             <div className="md:col-span-5 space-y-6">
               <a href="#" className="flex" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
@@ -1176,14 +1407,14 @@ export default function Home() {
               <p className="text-zinc-500 font-light text-[11px] leading-relaxed">
                 Stay updated with the latest in cinematic styles, software design milestones, and creative guides.
               </p>
-              
+
               {newsletterSuccess ? (
                 <div className="bg-[#e50914]/10 border border-[#e50914]/30 rounded-xl p-3 text-center text-[#e50914] font-semibold text-xs animate-pulse">
                   Subscribed to Broadcast list!
                 </div>
               ) : (
                 <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
-                  <Input 
+                  <Input
                     type="email"
                     placeholder="Enter email address"
                     value={newsletterEmail}
@@ -1191,7 +1422,7 @@ export default function Home() {
                     required
                     className="bg-[#0b0b0d] border-zinc-900 focus:border-[#e50914] focus:ring-1 focus:ring-[#e50914]/30 rounded-lg text-xs placeholder:text-zinc-700 flex-1"
                   />
-                  <Button 
+                  <Button
                     type="submit"
                     className="bg-[#e50914] hover:bg-[#b8070f] text-white px-4 rounded-lg font-bold uppercase text-[10px] tracking-wider cursor-pointer"
                   >
@@ -1206,11 +1437,11 @@ export default function Home() {
       </footer>
 
       {/* Global Interactive Quote Dialog Modal */}
-      <QuoteDialog 
+      <QuoteDialog
         key={selectedQuoteService}
-        open={isQuoteOpen} 
-        onOpenChange={setIsQuoteOpen} 
-        defaultService={selectedQuoteService} 
+        open={isQuoteOpen}
+        onOpenChange={setIsQuoteOpen}
+        defaultService={selectedQuoteService}
       />
 
     </div>
