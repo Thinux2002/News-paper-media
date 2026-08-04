@@ -683,7 +683,7 @@ export default function Home() {
                   className="w-full h-full object-cover rounded-2xl grayscale group-hover:grayscale-0 transition-all duration-700 ease-out" 
                 />
                 
-                {/* Micro Floating Info Card */}
+                {/* Micro Floating Info Card
                 <div className="absolute bottom-6 left-6 right-6 z-20 bg-[#0d0d10]/95 backdrop-blur border border-zinc-900 p-4 rounded-xl shadow-lg flex justify-between items-center">
                   <div className="space-y-0.5">
                     <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Active Capture</p>
@@ -692,7 +692,7 @@ export default function Home() {
                   <div className="bg-[#e50914]/15 text-[#e50914] px-2.5 py-1 rounded text-xs font-bold uppercase">
                     RED
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
 
