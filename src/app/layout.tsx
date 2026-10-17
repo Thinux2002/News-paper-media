@@ -19,7 +19,7 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "Newspaper Media | Premium Trans-Media Production Agency",
+  title: "Newspaper",
   description: "A premium creative trans-media production and technology agency specializing in cinema commercials, photography, visual branding, and custom website development.",
 };
 
