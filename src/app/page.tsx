@@ -232,9 +232,9 @@ export default function Home() {
             <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
           </div>
 
-          <div className="container-site relative z-10 flex flex-1 flex-col pt-32 lg:static lg:flex-row lg:items-center lg:pt-28 lg:pb-12">
+          <div className="container-site relative z-10 flex flex-1 flex-col pt-32 lg:static lg:flex-row lg:items-center lg:pt-[6.5rem] lg:pb-[clamp(1rem,3svh,3rem)]">
             <div className="relative z-10 lg:w-[54%]">
-              <p className="hero-badge mb-8 inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium tracking-wide text-zinc-200 backdrop-blur-md">
+              <p className="hero-badge mb-8 lg:mb-[clamp(0.75rem,3.5svh,2rem)] inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium tracking-wide text-zinc-200 backdrop-blur-md">
                 <span className="relative flex size-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-60" />
                   <span className="relative inline-flex size-2 rounded-full bg-brand" />
@@ -242,7 +242,7 @@ export default function Home() {
                 Media production &amp; creative agency · Sri Lanka
               </p>
 
-              <h1 className="text-[clamp(3.25rem,7.5vw,6.5rem)] leading-[0.92] text-white" style={{ perspective: "800px" }}>
+              <h1 className="text-[clamp(3.25rem,7.5vw,6.5rem)] lg:text-[length:clamp(2.5rem,min(7.5vw,9svh),6.5rem)] leading-[0.92] text-white" style={{ perspective: "800px" }}>
                 {HERO_LINES.map((line) => (
                   <span key={line.text} className="block overflow-hidden pb-[0.04em]">
                     <span className={cn("hero-line block origin-bottom", line.accent && "text-brand")}>{line.text}</span>
@@ -250,12 +250,12 @@ export default function Home() {
                 ))}
               </h1>
 
-              <p className="hero-fade mt-8 max-w-lg text-base leading-relaxed text-zinc-300 sm:text-lg">
+              <p className="hero-fade mt-8 max-w-lg text-base leading-relaxed text-zinc-300 sm:text-lg lg:mt-[clamp(1rem,3.5svh,2rem)] lg:text-[length:clamp(0.9375rem,2.1svh,1.125rem)]">
                 A full-service studio combining cinema-grade production, brand identity and high-performance digital
                 engineering for ambitious businesses.
               </p>
 
-              <div className="hero-fade mt-10 flex flex-wrap items-center gap-3">
+              <div className="hero-fade mt-10 lg:mt-[clamp(1.25rem,4svh,2.5rem)] flex flex-wrap items-center gap-3">
                 <Button
                   onClick={() => openQuote()}
                   className="group h-13 gap-2 rounded-full bg-brand px-7 text-sm font-semibold text-white shadow-[0_10px_40px_-10px_rgba(229,9,20,0.7)] hover:bg-brand-hover cursor-pointer"
@@ -283,12 +283,12 @@ export default function Home() {
           </div>
 
           {/* ═══ SERVICE TICKER ═════════════════════════════════════════ */}
-          <div className="relative z-10 overflow-hidden border-y border-line bg-surface/90 py-5 backdrop-blur-md" aria-hidden>
+          <div className="relative z-10 overflow-hidden border-y border-line bg-surface/90 py-5 lg:py-[clamp(0.75rem,2svh,1.25rem)] backdrop-blur-md" aria-hidden>
             <div className="animate-marquee-fast">
               {[0, 1].map((dup) => (
                 <div key={dup} className="flex shrink-0 items-center">
                   {SERVICES.map((s) => (
-                    <span key={s.id} className="flex items-center font-heading text-3xl font-bold uppercase text-zinc-700 sm:text-4xl">
+                    <span key={s.id} className="flex items-center font-heading text-3xl font-bold uppercase text-zinc-700 sm:text-4xl lg:text-[length:clamp(1.5rem,4svh,2.25rem)]">
                       <span className="px-8">{s.title}</span>
                       <span className="size-2.5 rotate-45 bg-brand" />
                     </span>
